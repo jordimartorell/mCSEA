@@ -152,12 +152,12 @@ mCSEAPlot <- function(data, pheno, mCSEAResults, regionType, region,
     if (platform == "450k") {
         rsobj <- minfi::RatioSet(CpGs, annotation=c(
             array="IlluminaHumanMethylation450k", annotation="ilmn12.hg19"))
-        annot <- minfi::getAnnotation(rsobj)
+        annot <- minfi::getAnnotation(rsobj, what = c("Locations", "Other"))
     }
     else {
         rsobj <- minfi::RatioSet(CpGs, annotation=c(
             array="IlluminaHumanMethylationEPIC",annotation="ilm10b2.hg19"))
-        annot <- minfi::getAnnotation(rsobj)
+        annot <- minfi::getAnnotation(rsobj, what = c("Locations", "Other"))
     }
 
     positions <- annot[c(cgs.plot), "pos"]
