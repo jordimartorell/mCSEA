@@ -26,9 +26,5 @@ myResults <- mCSEATest(myRank, regionsTypes = "promoters", platform = "EPIC")
 }
 data(precomputedmCSEA)
 head(myResults$promoters)
-head(myResults$promoters_association)
-mCSEAPlot(betaTest, phenoTest, myResults, "promoters", "CLIC6",
-        platform = "EPIC", transcriptAnnotation = "symbol", makePDF = FALSE)
-mCSEAPlotGSEA(myRank, myResults, "promoters", "CLIC6")
 }
 
