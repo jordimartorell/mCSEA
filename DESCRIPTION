@@ -1,7 +1,7 @@
 Package: mCSEA
 Type: Package
 Title: Methylated CpGs Set Enrichment Analysis
-Version: 0.99.0
+Version: 0.99.1
 Author: Jordi Martorell Marugán
 Maintainer: Jordi Martorell Marugán <jmartorellm@gmail.com>
 Description: Identification of diferentially methylated regions (DMRs) in predefined regions
@@ -11,7 +11,7 @@ Depends: R (>= 3.5), mCSEAdata
 Suggests: BiocStyle, knitr, rmarkdown
 Imports: limma, fgsea, Gviz, ggplot2, minfi, grDevices, stats, GenomicRanges
 VignetteBuilder: knitr
-biocViews: DifferentialMethylation, GeneExpression, Microarray,
+biocViews: DifferentialMethylation, Microarray,
         MethylationArray, Genetics,
         GenomeAnnotation, DNAMethylation, TwoChannel,
         MultipleComparison
