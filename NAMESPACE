@@ -1,0 +1,8 @@
+export(mCSEAPlot)
+export(mCSEAPlotGSEA)
+export(mCSEATest)
+export(rankProbes)
+import(mCSEAdata)
+importFrom("grDevices", "dev.off", "pdf")
+importFrom("stats", "model.matrix", "na.omit", "relevel")
+
