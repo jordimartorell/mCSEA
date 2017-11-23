@@ -37,8 +37,8 @@
 #' platform = "EPIC")
 #' }
 #' data(precomputedmCSEA)
-#' head(myResults$promoters)
-#' head(myResults$promoters_association)
+#' head(myResults[["promoters"]])
+#' head(myResults[["promoters_association"]])
 #' @export
 
 
@@ -96,110 +96,30 @@ mCSEATest <- function(rank, regionsTypes = c("promoters", "genes", "CGI"),
         for (region in regionsTypes) {
             if (region == "promoters") {
 
-                message("Associating CpG sites to promoters")
+                resGSEA <- .performGSEA(region, rank, platform, assocPromoters,
+                                        minCpGs, nperm, nproc)
 
-                if (platform == "450k" & length(rank) > 242500 |
-                    platform == "EPIC" & length(rank) > 433000){
-                    dataDiff <- setdiff(unlist(assocPromoters), names(rank))
-                    genes <- lapply(assocPromoters,
-                                    function(x) {x[!x %in% dataDiff]})
-                }
-
-                else {
-                    genes <- lapply(assocPromoters,
-                                    function(x) {x[x %in% names(rank)]})
-                }
-
-
-                message("Analysing promoters")
-
-                set.seed(123)
-                fgseaRes <- fgsea::fgsea(genes, rank, minSize=minCpGs,
-                                        nperm=nperm, nproc=nproc)
-                fgseaDataFrame <- as.data.frame(fgseaRes)
-                rownames(fgseaDataFrame) <- fgseaDataFrame[,1]
-                fgseaDataFrame <- fgseaDataFrame[,-1]
-                message(paste(sum(fgseaDataFrame$padj < 0.05),
-                            "differentially methylated promoters found",
-                            "(padj < 0.05)"))
-                fgseaSorted <- fgseaDataFrame[order(fgseaDataFrame$NES),]
-                fgseaSorted[,7] <- sapply(fgseaSorted[,7],
-                                        function(x) {paste(unlist(x),
-                                                        collapse=", ")})
-
-                output$promoters <- fgseaSorted
-                output$promoters_association <- genes
+                output[["promoters"]] <- resGSEA[[1]]
+                output[["promoters_association"]] <- resGSEA[[2]]
 
             }
 
             else if (region == "genes") {
-                message("Associating CpG sites to gene bodies")
 
-                if (platform == "450k" & length(rank) > 242500 |
-                    platform == "EPIC" & length(rank) > 433000){
-                    dataDiff <- setdiff(unlist(assocGenes), names(rank))
-                    genes <- lapply(assocGenes,
-                                    function(x) {x[!x %in% dataDiff]})
-                }
+                resGSEA <- .performGSEA(region, rank, platform, assocGenes,
+                                        minCpGs, nperm, nproc)
 
-                else {
-                    genes <- lapply(assocGenes,
-                                    function(x) {x[x %in% names(rank)]})
-                }
-
-
-                message("Analysing gene bodies")
-
-                set.seed(123)
-                fgseaRes <- fgsea::fgsea(genes, rank, minSize=minCpGs,
-                                        nperm=nperm, nproc=nproc)
-                fgseaDataFrame <- as.data.frame(fgseaRes)
-                rownames(fgseaDataFrame) <- fgseaDataFrame[,1]
-                fgseaDataFrame <- fgseaDataFrame[,-1]
-                message(paste(sum(fgseaDataFrame$padj < 0.05), "differentially
-                            methylated gene bodies found (padj < 0.05)"))
-                fgseaSorted <- fgseaDataFrame[order(fgseaDataFrame$NES),]
-                fgseaSorted[,7] <- sapply(fgseaSorted[,7],
-                                        function(x) {paste(unlist(x),
-                                                        collapse=", ")})
-
-                output$genes <- fgseaSorted
-                output$genes_association <- genes
+                output[["genes"]] <- resGSEA[[1]]
+                output[["genes_association"]] <- resGSEA[[2]]
 
             }
             else if (region == "CGI") {
-                message("Associating CpG sites to CpG Islands")
 
-                if (platform == "450k" & length(rank) > 242500 |
-                    platform == "EPIC" & length(rank) > 433000){
-                    dataDiff <- setdiff(unlist(assocCGI), names(rank))
-                    genes <- lapply(assocCGI, function(x) {x[!x %in% dataDiff]})
-                }
+                resGSEA <- .performGSEA(region, rank, platform, assocCGI,
+                                        minCpGs, nperm, nproc)
 
-                else {
-                    genes <- lapply(assocCGI,
-                                    function(x) {x[x %in% names(rank)]})
-                }
-
-
-                message("Analysing CpG Islands")
-
-                set.seed(123)
-                fgseaRes <- fgsea::fgsea(genes, rank, minSize=minCpGs,
-                                        nperm=nperm, nproc=nproc)
-                fgseaDataFrame <- as.data.frame(fgseaRes)
-                rownames(fgseaDataFrame) <- fgseaDataFrame[,1]
-                fgseaDataFrame <- fgseaDataFrame[,-1]
-                message(paste(sum(fgseaDataFrame$padj < 0.05),
-                            "differentially methylated CpG Islands found",
-                            "(padj < 0.05)"))
-                fgseaSorted <- fgseaDataFrame[order(fgseaDataFrame$NES),]
-                fgseaSorted[,7] <- sapply(fgseaSorted[,7],
-                                        function(x){paste(unlist(x),
-                                                        collapse=", ")})
-
-                output$CGI <- fgseaSorted
-                output$CGI_association <- genes
+                output[["CGI"]] <- resGSEA[[1]]
+                output[["CGI_association"]] <- resGSEA[[2]]
 
             }
         }
@@ -208,31 +128,51 @@ mCSEATest <- function(rank, regionsTypes = c("promoters", "genes", "CGI"),
 
     if (!is.null(customAnnotation)) {
 
-        genes <- customAnnotation
+        resGSEA <- .performGSEA(region, rank, platform, customAnnotation,
+                                minCpGs, nperm, nproc)
 
-        message("Analysing custom regions")
-
-        set.seed(123)
-        fgseaRes <- fgsea::fgsea(genes, rank, minSize=minCpGs, nperm=nperm,
-                                nproc=nproc)
-        fgseaDataFrame <- as.data.frame(fgseaRes)
-        rownames(fgseaDataFrame) <- fgseaDataFrame[,1]
-        fgseaDataFrame <- fgseaDataFrame[,-1]
-        message(paste(sum(fgseaDataFrame$padj < 0.05),
-                    "differentially methylated custom regions found",
-                    "(padj < 0.05)"))
-        fgseaSorted <- fgseaDataFrame[order(fgseaDataFrame$NES),]
-        fgseaSorted[,7] <- sapply(fgseaSorted[,7],
-                                function(x) {paste(unlist(x),
-                                                collapse=", ")})
-
-        output$custom <- fgseaSorted
-        output$custom_association <- genes
+        output[["custom"]] <- resGSEA[[1]]
+        output[["custom_association"]] <- resGSEA[[2]]
     }
     return(output)
 }
 
 
+.performGSEA <- function(region, rank, platform, assoc, minCpGs, nperm, nproc) {
 
+    if (region != "custom"){
+        message(paste("Associating CpG sites to", region))
 
+        if (platform == "450k" & length(rank) > 242500 |
+            platform == "EPIC" & length(rank) > 433000){
+            dataDiff <- setdiff(unlist(assoc), names(rank))
+            genes <- lapply(assoc,
+                            function(x) {x[!x %in% dataDiff]})
+        }
 
+        else {
+            genes <- lapply(assoc,
+                            function(x) {x[x %in% names(rank)]})
+        }
+    }
+    else {
+        genes <- assoc
+    }
+
+    message(paste("Analysing", region))
+
+    set.seed(123)
+    fgseaRes <- fgsea::fgsea(genes, rank, minSize=minCpGs,
+                            nperm=nperm, nproc=nproc)
+    fgseaDataFrame <- as.data.frame(fgseaRes)
+    rownames(fgseaDataFrame) <- fgseaDataFrame[,1]
+    fgseaDataFrame <- fgseaDataFrame[,-1]
+    message(paste(sum(fgseaDataFrame[["padj"]] < 0.05),
+                "DMRs found (padj < 0.05)"))
+    fgseaSorted <- fgseaDataFrame[order(fgseaDataFrame[["NES"]]),]
+    fgseaSorted[,7] <- sapply(fgseaSorted[,7],
+                            function(x) {paste(unlist(x),
+                                                collapse=", ")})
+
+    return(list(fgseaSorted, genes))
+}

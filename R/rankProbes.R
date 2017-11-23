@@ -4,9 +4,10 @@
 #' t-value of each CpG probe
 #'
 #' @param data A data frame or a matrix containing Illumina's CpG probes in rows
-#'  and samples in columns
+#'  and samples in columns. A SummarizedExperiment object can be used too.
 #' @param pheno A data frame or a matrix containing samples in rows and
-#' covariates in columns
+#' covariates in columns. If NULL (default), pheno is extracted from the
+#' SummarizedExperiment object.
 #' @param explanatory The column name or position from pheno used to perform the
 #'  comparison between groups (default = first column)
 #' @param covariates A list or character vector with column names from pheno
@@ -41,18 +42,22 @@
 #' head(myRank)
 #' @export
 
-rankProbes <- function(data, pheno, explanatory = 1, covariates = c(),
+rankProbes <- function(data, pheno = NULL, explanatory = 1, covariates = c(),
                     refGroup = 1, continuous = NULL,
                     typeInput = "beta", typeAnalysis = "M")
     {
 
     # Check input objects
-    if (!any(class(data) == "data.frame" | class(data) == "matrix")){
-        stop("data must be a data frame or a matrix")
+    if (!any(class(data) == "data.frame" | class(data) == "matrix" |
+            class(data) == "SummarizedExperiment" |
+            class(data) == "RangedSummarizedExperiment")){
+        stop("data must be a data frame, a matrix or a SummarizedExperiment
+            object")
     }
 
-    if (!any(class(pheno) == "data.frame" | class(pheno) == "matrix")){
-        stop("pheno must be a data frame or a matrix")
+    if (!any(class(pheno) == "data.frame" | class(pheno) == "matrix" |
+            is.null(pheno))){
+        stop("pheno must be a data frame, a matrix or NULL")
     }
 
     if (!any(class(explanatory) != "character" |
@@ -83,6 +88,22 @@ rankProbes <- function(data, pheno, explanatory = 1, covariates = c(),
         stop("typeAnalysis must be a character object")
     }
 
+    # Get data from SummarizedExperiment objects
+
+    if (class(data) == "SummarizedExperiment" |
+        class(data) == "RangedSummarizedExperiment" ){
+        if (is.null(pheno)){
+            pheno <- SummarizedExperiment::colData(data)
+        }
+        data <- SummarizedExperiment::assay(data)
+    }
+    else {
+        if (is.null(pheno)) {
+            stop("If data is not a SummarizedExperiment, you must provide
+                pheno parameter")
+        }
+    }
+
     if (is.null(continuous)){
         continuous <- c()
         categorical <- colnames(pheno)
@@ -94,11 +115,17 @@ rankProbes <- function(data, pheno, explanatory = 1, covariates = c(),
         categorical <- setdiff(colnames(pheno), continuous)
     }
 
-    # Ensure all categorial variables are factors and continuous variables are
-    # numeric
+    # Ensure all categorial variables are factors, continuous variables are
+    # numeric and there are no lists
     for (column in colnames(pheno)) {
         if (column %in% categorical) {
-            pheno[,column] <- factor(pheno[,column])
+            if (typeof(pheno[,column]) == "list") {
+                message(paste(column, "variable skipped due to it is a list"))
+                pheno[, -which(names(pheno) == column)]
+            }
+            else {
+                pheno[,column] <- factor(pheno[,column])
+            }
         }
         else {
             pheno[,column] <- as.numeric(as.character(pheno[,column]))
@@ -107,6 +134,7 @@ rankProbes <- function(data, pheno, explanatory = 1, covariates = c(),
 
     typeInput <- match.arg(typeInput, c("beta", "M"))
     typeAnalysis <- match.arg(typeAnalysis, c("M", "beta"))
+
 
     if (class(explanatory) == "numeric") {
         explanatory <- colnames(pheno)[explanatory]
@@ -126,8 +154,6 @@ rankProbes <- function(data, pheno, explanatory = 1, covariates = c(),
 
     pheno <- data.frame(pheno[,c(explanatory, covariates)])
     colnames(pheno) <- c(explanatory, covariates)
-
-
 
     # Prepare methylation data for limma
     if (typeInput == "beta") {
@@ -187,7 +213,6 @@ rankProbes <- function(data, pheno, explanatory = 1, covariates = c(),
 
     linearModel <- limma::eBayes(limma::lmFit(dataLimma, model))
 
-    tValues <- linearModel$t[,2]
-
+    tValues <- linearModel[["t"]][,2]
     return(tValues)
 }
