@@ -4,15 +4,17 @@
 \alias{rankProbes}
 \title{Rank CpG probes}
 \usage{
-rankProbes(data, pheno, explanatory = 1, covariates = c(), refGroup = 1,
-  continuous = NULL, typeInput = "beta", typeAnalysis = "M")
+rankProbes(data, pheno = NULL, explanatory = 1, covariates = c(),
+  refGroup = 1, continuous = NULL, typeInput = "beta",
+  typeAnalysis = "M")
 }
 \arguments{
 \item{data}{A data frame or a matrix containing Illumina's CpG probes in rows
-and samples in columns}
+and samples in columns. A SummarizedExperiment object can be used too.}
 
 \item{pheno}{A data frame or a matrix containing samples in rows and
-covariates in columns}
+covariates in columns. If NULL (default), pheno is extracted from the
+SummarizedExperiment object.}
 
 \item{explanatory}{The column name or position from pheno used to perform the
 comparison between groups (default = first column)}

@@ -45,8 +45,8 @@ myResults <- mCSEATest(myRank, regionsTypes = "promoters",
 platform = "EPIC")
 }
 data(precomputedmCSEA)
-head(myResults$promoters)
-head(myResults$promoters_association)
+head(myResults[["promoters"]])
+head(myResults[["promoters_association"]])
 }
 \references{
 Subramanian, A. et al (2005). \emph{Gene set enrichment analysis:
