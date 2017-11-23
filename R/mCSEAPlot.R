@@ -54,6 +54,8 @@ mCSEAPlot <- function(data, pheno, mCSEAResults, regionType, region,
                         genes = TRUE, transcriptAnnotation = "transcript",
                         makePDF = TRUE){
 
+    progress <- utils::txtProgressBar(min=0, max=10, style=3)
+
     # Check input objects
     if (!any(class(data) == "data.frame" | class(data) == "matrix")){
         stop("data must be a data frame or a matrix")
@@ -119,35 +121,17 @@ mCSEAPlot <- function(data, pheno, mCSEAResults, regionType, region,
     regionType <- match.arg(regionType, choices=c("promoters", "genes", "CGI",
                                                     "custom"))
 
-    if(regionType == "promoters") {
-        assoc <- mCSEAResults$promoters_association
-        leadingCpGs <- strsplit(mCSEAResults$promoters[region, "leadingEdge"],
-                                ", ")[[1]]
-    }
+    assoc <- mCSEAResults[[paste(regionType, "association", sep="_")]]
 
-    else if(regionType == "genes") {
-        assoc <- mCSEAResults$genes_association
-        leadingCpGs <- strsplit(mCSEAResults$genes[region, "leadingEdge"],
-                                ", ")[[1]]
-    }
-
-    else if(regionType == "CGI") {
-        assoc <- mCSEAResults$CGI_association
-        leadingCpGs <- strsplit(mCSEAResults$CGI[region, "leadingEdge"],
-                                ", ")[[1]]
-    }
-
-    else if(regionType == "custom") {
-        assoc <- mCSEAResults$custom_association
-        leadingCpGs <- strsplit(mCSEAResults$custom[region, "leadingEdge"],
-                                ", ")[[1]]
-    }
-
+    leadingCpGs <- strsplit(mCSEAResults[[regionType]]
+                            [region, "leadingEdge"],", ")[[1]]
 
     cgs.plot <- assoc[[region]]
 
     CpGs <- data[cgs.plot,]
     Phenotype <- pheno[,column]
+
+    utils::setTxtProgressBar(progress, 1)
 
     if (platform == "450k") {
         rsobj <- minfi::RatioSet(CpGs, annotation=c(
@@ -159,6 +143,8 @@ mCSEAPlot <- function(data, pheno, mCSEAResults, regionType, region,
             array="IlluminaHumanMethylationEPIC",annotation="ilm10b2.hg19"))
         annot <- minfi::getAnnotation(rsobj, what = c("Locations", "Other"))
     }
+
+    utils::setTxtProgressBar(progress, 3)
 
     positions <- annot[c(cgs.plot), "pos"]
     Chromosome <- annot[c(cgs.plot[1]), "chr"]
@@ -173,16 +159,20 @@ mCSEAPlot <- function(data, pheno, mCSEAResults, regionType, region,
 
 
     # Subset data
-
     dataSubset <- data[na.omit(match(probes, rownames(data))),]
+
+    utils::setTxtProgressBar(progress, 4)
 
     if (chromosome) {
         #Ideogram
-        itrack <- Gviz::IdeogramTrack(genome="hg19", chromosome=Chromosome)
+        itrack <- Gviz::IdeogramTrack(genome="hg19", chromosome=Chromosome,
+                                    bands=mCSEA:::bandTable)
 
         #Genome axis
         gtrack <- Gviz::GenomeAxisTrack()
     }
+    utils::setTxtProgressBar(progress, 5)
+
 
     if (genes){
         #Genes track from UCSC
@@ -195,6 +185,8 @@ mCSEAPlot <- function(data, pheno, mCSEAResults, regionType, region,
                                                 transcriptAnnotation=
                                                     transcriptAnnotation)
     }
+    utils::setTxtProgressBar(progress, 6)
+
 
     #CpG islands
     if(CGI) {
@@ -206,6 +198,8 @@ mCSEAPlot <- function(data, pheno, mCSEAResults, regionType, region,
                                     showId=FALSE, shape="box",
                                     fill="#006400", name="CpG Islands")
     }
+    utils::setTxtProgressBar(progress, 7)
+
     #Data track
     annotSubset <- annotSubset[match(rownames(dataSubset),
                                     rownames(annotSubset)),]
@@ -224,11 +218,12 @@ mCSEAPlot <- function(data, pheno, mCSEAResults, regionType, region,
     colnames(dataValues)[2] <- "end"
     colnames(dataValues)[3] <- "chromosome"
     dataValues[2] <- dataValues[2] + 1
-
     dtrack <- Gviz::DataTrack(dataValues, genome="hg19",
                             type=c("g","p","a"),
                             name="DNA Methylation",
                             groups=phenotypeOrdered)
+    utils::setTxtProgressBar(progress, 8)
+
 
     if (leadingEdge){
 
@@ -257,6 +252,8 @@ mCSEAPlot <- function(data, pheno, mCSEAResults, regionType, region,
                                     showAxis=FALSE)
         }
     }
+    utils::setTxtProgressBar(progress, 9)
+
 
 
     #Scale PDF
@@ -433,4 +430,7 @@ mCSEAPlot <- function(data, pheno, mCSEAResults, regionType, region,
     if (makePDF){
         dev.off()
     }
+
+    utils::setTxtProgressBar(progress, 10)
+
 }
