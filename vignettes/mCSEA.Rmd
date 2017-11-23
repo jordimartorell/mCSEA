@@ -106,6 +106,11 @@ myRank <- rankProbes(betaTest, phenoTest, refGroup = "Control")
 ```{r}
 head(myRank)
 ```
+
+You can also supply rankProbes function with a SummarizedExperiment object. In 
+that case, if you don't specify a **pheno** object, phenotypes will be 
+extracted from the SummarizedExperiment object with _colData_ function.
+
 # Step 2: Searching DMRs in predefined regions
 
 Once you calculated a score for each CpG, you can perform the mCSEA analysis. 
@@ -130,8 +135,30 @@ for each region type analyzed.
 
 ```{r}
 ls(myResults)
-head(myResults$promoters[,-7])
-head(myResults$promoters_association)
+```
+
+_promoters_ is a data frame with the following columns (partially extracted 
+from `r Biocpkg("fgsea")` help):
+
+* *pval:* Estimated P-value.
+* *padj:* P-value adjusted by BH method.
+* *ES:* Enrichment score.
+* *NES:* Normalized enrichment score by number of CpGs associated to the 
+feature.
+* *nMoreExtreme:* Number of times a random gene set had a more extreme 
+enrichment score value.
+* *size:* Number of CpGs associated to the feature.
+* *leadingEdge:* Leading edge CpGs which drive the enrichment.
+
+```{r}
+head(myResults[["promoters"]][,-7])
+```
+
+On the other hand, _promoters_association_ is a list with the CpG probes 
+associated to each feature:
+
+```{r}
+head(myResults[["promoters_association"]], 3)
 ```
 
 In addition, you can also provide a custom association object between CpG 
@@ -139,7 +166,7 @@ probes and regions (_customAnnotation_ option). This object should be a list
 with a structure similar to this:
 
 ```{r}
-head(assocGenes450k)
+head(assocGenes450k, 3)
 ```
 
 # Step 3: Plotting the results
@@ -151,7 +178,7 @@ must specify which type of region you want to plot and the name of the plotted
 region (e.g. gene name). There are some graphical parameters you can adjust 
 (see _mCSEAPlot_ help).
 
-```{r, message = FALSE}
+```{r, message = FALSE, results='hide'}
 mCSEAPlot(betaTest, phenoTest, myResults, regionType = "promoters", 
            region = "CLIC6", platform="EPIC",
            transcriptAnnotation = "symbol", makePDF = FALSE)
