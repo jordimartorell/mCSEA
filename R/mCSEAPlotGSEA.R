@@ -26,6 +26,7 @@
 #' library(mCSEAdata)
 #' data(mcseadata)
 #' myRank <- rankProbes(betaTest, phenoTest, refGroup = "Control")
+#' set.seed(123)
 #' myResults <- mCSEATest(myRank, regionsTypes = "promoters",
 #' platform = "EPIC")
 #' }
@@ -52,19 +53,19 @@ mCSEAPlotGSEA <- function(rank, mCSEAResults, regionType, region){
                             choices=c("promoters", "genes", "CGI", "custom"))
 
     if(regionType == "promoters") {
-        assoc <- mCSEAResults$promoters_association
+        assoc <- mCSEAResults[["promoters_association"]]
     }
 
     else if(regionType == "genes") {
-        assoc <- mCSEAResults$genes_association
+        assoc <- mCSEAResults[["genes_association"]]
     }
 
     else if(regionType == "CGI") {
-        assoc <- mCSEAResults$CGI_association
+        assoc <- mCSEAResults[["CGI_association"]]
     }
 
     else if(regionType == "custom") {
-        assoc <- mCSEAResults$custom_association
+        assoc <- mCSEAResults[["custom_association"]]
     }
 
     if (!region %in% names(assoc)){

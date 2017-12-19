@@ -29,6 +29,7 @@ Generate an enrichment plot
 library(mCSEAdata)
 data(mcseadata)
 myRank <- rankProbes(betaTest, phenoTest, refGroup = "Control")
+set.seed(123)
 myResults <- mCSEATest(myRank, regionsTypes = "promoters",
 platform = "EPIC")
 }

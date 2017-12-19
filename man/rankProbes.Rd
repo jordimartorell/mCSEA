@@ -43,12 +43,8 @@ Apply a linear model to Illumina's 450k or EPIC methylation data to get the
 t-value of each CpG probe
 }
 \examples{
-\dontrun{
-library(mCSEAdata)
 data(mcseadata)
 myRank <- rankProbes(betaTest, phenoTest, refGroup = "Control")
-}
-data(precomputedmCSEA)
 head(myRank)
 }
 \references{

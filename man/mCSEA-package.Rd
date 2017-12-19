@@ -19,7 +19,7 @@ Maintainer: Jordi Martorell Marugán<jordi.martorell@genyo.es>
 
 \examples{
 \dontrun{
-library(mCSEAdata)
+library(mCSEA)
 data(mcseadata)
 myRank <- rankProbes(betaTest, phenoTest, refGroup = "Control")
 myResults <- mCSEATest(myRank, regionsTypes = "promoters", platform = "EPIC")

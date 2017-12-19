@@ -59,6 +59,7 @@ library(mCSEAdata)
 data(mcseadata)
 \dontrun{
 myRank <- rankProbes(betaTest, phenoTest, refGroup = "Control")
+set.seed(123)
 myResults <- mCSEATest(myRank, regionsTypes = "promoters",
 platform = "EPIC")
 }

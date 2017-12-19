@@ -6,13 +6,13 @@
 #' @param rank A named numeric vector with the ranking statistic of each CpG
 #' site
 #' @param regionsTypes A character or character vector indicating the predefined
-#'  regions to be analyzed. NULL to skip this step
+#'  regions to be analyzed. NULL to skip this step and use customAnnotation.
 #' @param customAnnotation An optional list with the CpGs associated to each
 #' feature (default = NULL)
 #' @param minCpGs Minimum number of CpGs associated to a region. Regions below
 #' this threshold are not tested
 #' @param nproc Number of processors to use in GSEA step (default = 1)
-#' @param nperm Number of permutations to do in GSEA step (default = 100000)
+#' @param nperm Number of permutations to do in GSEA step (default = 10000)
 #' @param platform Platform used to get the methylation data (450k or EPIC)
 #'
 #' @return A list with the results of each of the analyzed regions. For each
@@ -33,6 +33,7 @@
 #' library(mCSEAdata)
 #' data(mcseadata)
 #' myRank <- rankProbes(betaTest, phenoTest, refGroup = "Control")
+#' set.seed(123)
 #' myResults <- mCSEATest(myRank, regionsTypes = "promoters",
 #' platform = "EPIC")
 #' }
@@ -44,7 +45,7 @@
 
 mCSEATest <- function(rank, regionsTypes = c("promoters", "genes", "CGI"),
                     customAnnotation = NULL, minCpGs = 5, nproc = 1,
-                    nperm = 100000, platform = "450k")
+                    nperm = 10000, platform = "450k")
     {
 
     output <- list()
@@ -161,7 +162,6 @@ mCSEATest <- function(rank, regionsTypes = c("promoters", "genes", "CGI"),
 
     message(paste("Analysing", region))
 
-    set.seed(123)
     fgseaRes <- fgsea::fgsea(genes, rank, minSize=minCpGs,
                             nperm=nperm, nproc=nproc)
     fgseaDataFrame <- as.data.frame(fgseaRes)

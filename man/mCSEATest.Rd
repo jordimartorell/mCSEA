@@ -5,7 +5,7 @@
 \title{mCSEA core analysis}
 \usage{
 mCSEATest(rank, regionsTypes = c("promoters", "genes", "CGI"),
-  customAnnotation = NULL, minCpGs = 5, nproc = 1, nperm = 1e+05,
+  customAnnotation = NULL, minCpGs = 5, nproc = 1, nperm = 10000,
   platform = "450k")
 }
 \arguments{
@@ -13,7 +13,7 @@ mCSEATest(rank, regionsTypes = c("promoters", "genes", "CGI"),
 site}
 
 \item{regionsTypes}{A character or character vector indicating the predefined
-regions to be analyzed. NULL to skip this step}
+regions to be analyzed. NULL to skip this step and use customAnnotation.}
 
 \item{customAnnotation}{An optional list with the CpGs associated to each
 feature (default = NULL)}
@@ -23,7 +23,7 @@ this threshold are not tested}
 
 \item{nproc}{Number of processors to use in GSEA step (default = 1)}
 
-\item{nperm}{Number of permutations to do in GSEA step (default = 100000)}
+\item{nperm}{Number of permutations to do in GSEA step (default = 10000)}
 
 \item{platform}{Platform used to get the methylation data (450k or EPIC)}
 }
@@ -41,6 +41,7 @@ regions
 library(mCSEAdata)
 data(mcseadata)
 myRank <- rankProbes(betaTest, phenoTest, refGroup = "Control")
+set.seed(123)
 myResults <- mCSEATest(myRank, regionsTypes = "promoters",
 platform = "EPIC")
 }

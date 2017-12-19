@@ -39,6 +39,7 @@
 #' data(mcseadata)
 #' \dontrun{
 #' myRank <- rankProbes(betaTest, phenoTest, refGroup = "Control")
+#' set.seed(123)
 #' myResults <- mCSEATest(myRank, regionsTypes = "promoters",
 #' platform = "EPIC")
 #' }
@@ -136,11 +137,13 @@ mCSEAPlot <- function(data, pheno, mCSEAResults, regionType, region,
     if (platform == "450k") {
         rsobj <- minfi::RatioSet(CpGs, annotation=c(
             array="IlluminaHumanMethylation450k", annotation="ilmn12.hg19"))
+        utils::setTxtProgressBar(progress, 2)
         annot <- minfi::getAnnotation(rsobj, what = c("Locations", "Other"))
     }
     else {
         rsobj <- minfi::RatioSet(CpGs, annotation=c(
             array="IlluminaHumanMethylationEPIC",annotation="ilm10b2.hg19"))
+        utils::setTxtProgressBar(progress, 2)
         annot <- minfi::getAnnotation(rsobj, what = c("Locations", "Other"))
     }
 
@@ -166,7 +169,7 @@ mCSEAPlot <- function(data, pheno, mCSEAResults, regionType, region,
     if (chromosome) {
         #Ideogram
         itrack <- Gviz::IdeogramTrack(genome="hg19", chromosome=Chromosome,
-                                    bands=mCSEA:::bandTable)
+                                    bands=mCSEA::bandTable)
 
         #Genome axis
         gtrack <- Gviz::GenomeAxisTrack()

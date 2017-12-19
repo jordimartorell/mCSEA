@@ -1,4 +1,4 @@
-1#' Rank CpG probes
+#' Rank CpG probes
 #'
 #' Apply a linear model to Illumina's 450k or EPIC methylation data to get the
 #' t-value of each CpG probe
@@ -33,12 +33,9 @@
 #' @seealso \code{\link{mCSEATest}}
 #'
 #' @examples
-#' \dontrun{
-#' library(mCSEAdata)
+#' library(mCSEA)
 #' data(mcseadata)
 #' myRank <- rankProbes(betaTest, phenoTest, refGroup = "Control")
-#' }
-#' data(precomputedmCSEA)
 #' head(myRank)
 #' @export
 
