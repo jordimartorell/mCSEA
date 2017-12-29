@@ -3,11 +3,11 @@
 #' Apply a linear model to Illumina's 450k or EPIC methylation data to get the
 #' t-value of each CpG probe
 #'
-#' @param data A data frame or a matrix containing Illumina's CpG probes in rows
-#'  and samples in columns. A SummarizedExperiment object can be used too.
+#' @param methData A data frame or a matrix containing Illumina's CpG probes in
+#' rows and samples in columns. A SummarizedExperiment object can be used too
 #' @param pheno A data frame or a matrix containing samples in rows and
 #' covariates in columns. If NULL (default), pheno is extracted from the
-#' SummarizedExperiment object.
+#' SummarizedExperiment object
 #' @param explanatory The column name or position from pheno used to perform the
 #'  comparison between groups (default = first column)
 #' @param covariates A list or character vector with column names from pheno
@@ -16,8 +16,8 @@
 #' perform the comparison (default = first group)
 #' @param continuous A list or character vector with columns names from pheno
 #' which should be treated as continuous variables (default = none)
-#' @param typeInput Type of input data. "beta" for Beta-values and "M" for
-#' M-values
+#' @param typeInput Type of input methylation data. "beta" for Beta-values and
+#' "M" for M-values
 #' @param typeAnalysis "M" to use M-values to rank the CpG probes (default).
 #' "beta" to use Beta-values instead
 #'
@@ -33,22 +33,21 @@
 #' @seealso \code{\link{mCSEATest}}
 #'
 #' @examples
-#' library(mCSEA)
 #' data(mcseadata)
 #' myRank <- rankProbes(betaTest, phenoTest, refGroup = "Control")
 #' head(myRank)
 #' @export
 
-rankProbes <- function(data, pheno = NULL, explanatory = 1, covariates = c(),
-                    refGroup = 1, continuous = NULL,
+rankProbes <- function(methData, pheno = NULL, explanatory = 1,
+                    covariates = c(), refGroup = 1, continuous = NULL,
                     typeInput = "beta", typeAnalysis = "M")
     {
 
     # Check input objects
-    if (!any(class(data) == "data.frame" | class(data) == "matrix" |
-            class(data) == "SummarizedExperiment" |
-            class(data) == "RangedSummarizedExperiment")){
-        stop("data must be a data frame, a matrix or a SummarizedExperiment
+    if (!any(class(methData) == "data.frame" | class(methData) == "matrix" |
+            class(methData) == "SummarizedExperiment" |
+            class(methData) == "RangedSummarizedExperiment")){
+        stop("methData must be a data frame, a matrix or a SummarizedExperiment
             object")
     }
 
@@ -87,16 +86,16 @@ rankProbes <- function(data, pheno = NULL, explanatory = 1, covariates = c(),
 
     # Get data from SummarizedExperiment objects
 
-    if (class(data) == "SummarizedExperiment" |
-        class(data) == "RangedSummarizedExperiment" ){
+    if (class(methData) == "SummarizedExperiment" |
+        class(methData) == "RangedSummarizedExperiment" ){
         if (is.null(pheno)){
-            pheno <- SummarizedExperiment::colData(data)
+            pheno <- SummarizedExperiment::colData(methData)
         }
-        data <- SummarizedExperiment::assay(data)
+        methData <- SummarizedExperiment::assay(methData)
     }
     else {
         if (is.null(pheno)) {
-            stop("If data is not a SummarizedExperiment, you must provide
+            stop("If methData is not a SummarizedExperiment, you must provide
                 pheno parameter")
         }
     }
@@ -154,31 +153,31 @@ rankProbes <- function(data, pheno = NULL, explanatory = 1, covariates = c(),
 
     # Prepare methylation data for limma
     if (typeInput == "beta") {
-        if (any(min(data, na.rm=TRUE) < 0 | max(data, na.rm=TRUE) > 1)) {
+        if (any(min(methData, na.rm=TRUE) < 0 | max(methData, na.rm=TRUE) > 1)){
             warning("Introduced beta-values are not between 0 and 1. Are you
                     sure these are not M-values?")
         }
 
         if (typeAnalysis == "beta") {
-            dataLimma <- data
+            dataLimma <- methData
         }
         else {
             message("Transforming beta-values to M-values")
-            dataLimma <- log2(data) - log2(1 - data)
+            dataLimma <- log2(methData) - log2(1 - methData)
         }
     }
     else {
-        if (min(data, na.rm=TRUE) >= 0 && max(data, na.rm=TRUE) <= 1) {
+        if (min(methData, na.rm=TRUE) >= 0 && max(methData, na.rm=TRUE) <= 1) {
             warning("Introduced M-values are between 0 and 1. Are you sure these
                     are not beta-values?")
         }
 
         if (typeAnalysis == "beta") {
             message("Transforming M-values to beta-values")
-            dataLimma <- 2^(data)/(1 + 2^(data))
+            dataLimma <- 2^(methData)/(1 + 2^(methData))
         }
         else {
-            dataLimma <- data
+            dataLimma <- methData
         }
     }
 
@@ -195,8 +194,14 @@ rankProbes <- function(data, pheno = NULL, explanatory = 1, covariates = c(),
         message("\tCovariates: None")
         message(paste("\tCategorical variables:",
                     paste(categorical, collapse=" ")))
-        message(paste("\tContinuous variables:",
-                    paste(continuous, collapse=" ")))
+        if (length(continuous) > 0) {
+            message(paste("\tContinuous variables:",
+                            paste(continuous, collapse=" ")))
+        }
+        else {
+            message("\tContinuous variables: None")
+        }
+
         model <- model.matrix(~get(explanatory), data=pheno)
         }
     else {

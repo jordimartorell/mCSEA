@@ -2,7 +2,11 @@ export(mCSEAPlot)
 export(mCSEAPlotGSEA)
 export(mCSEATest)
 export(rankProbes)
+export(mCSEAIntegrate)
 import(mCSEAdata)
+import(Homo.sapiens)
 importFrom("grDevices", "dev.off", "pdf")
-importFrom("stats", "model.matrix", "na.omit", "relevel")
+importFrom("stats", "cor.test", "lm", "model.matrix",
+            "na.omit", "p.adjust", "relevel")
+importFrom("graphics", "abline", "legend", "par", "plot")
 

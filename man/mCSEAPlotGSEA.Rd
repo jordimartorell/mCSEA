@@ -4,7 +4,7 @@
 \alias{mCSEAPlotGSEA}
 \title{Plot mCSEA results}
 \usage{
-mCSEAPlotGSEA(rank, mCSEAResults, regionType, region)
+mCSEAPlotGSEA(rank, mCSEAResults, regionType, dmrName)
 }
 \arguments{
 \item{rank}{A named numeric vector with the ranking statistic of each CpG
@@ -15,7 +15,7 @@ site}
 \item{regionType}{The region type to be represented. Must be one of
 "promoters", "genes", "CGI" or "custom"}
 
-\item{region}{The region of interest to be represented (e.g. gene name,
+\item{dmrName}{The DMR of interest to be represented (e.g. gene name,
 CGI name...)}
 }
 \value{

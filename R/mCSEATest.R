@@ -5,6 +5,13 @@
 #'
 #' @param rank A named numeric vector with the ranking statistic of each CpG
 #' site
+#' @param methData A data frame or a matrix containing Illumina's CpG probes in
+#' rows and samples in columns. A SummarizedExperiment object can be used too
+#' @param pheno A data frame or a matrix containing samples in rows and
+#' covariates in columns. If NULL (default), pheno is extracted from the
+#' SummarizedExperiment object
+#' @param column The column name or number from pheno used to split the samples
+#' into groups (first column is used by default)
 #' @param regionsTypes A character or character vector indicating the predefined
 #'  regions to be analyzed. NULL to skip this step and use customAnnotation.
 #' @param customAnnotation An optional list with the CpGs associated to each
@@ -17,7 +24,8 @@
 #'
 #' @return A list with the results of each of the analyzed regions. For each
 #' region type, a data frame with the results and a list with the probes
-#' associated to each region are generated
+#' associated to each region are generated. In addition, this list also contains
+#' the input methData, pheno and platform objects
 #'
 #' @author Jordi Martorell Marugán, \email{jordi.martorell@@genyo.es}
 #'
@@ -34,8 +42,8 @@
 #' data(mcseadata)
 #' myRank <- rankProbes(betaTest, phenoTest, refGroup = "Control")
 #' set.seed(123)
-#' myResults <- mCSEATest(myRank, regionsTypes = "promoters",
-#' platform = "EPIC")
+#' myResults <- mCSEATest(myRank, betaTest, phenoTest,
+#' regionsTypes = "promoters", platform = "EPIC")
 #' }
 #' data(precomputedmCSEA)
 #' head(myResults[["promoters"]])
@@ -43,9 +51,10 @@
 #' @export
 
 
-mCSEATest <- function(rank, regionsTypes = c("promoters", "genes", "CGI"),
-                    customAnnotation = NULL, minCpGs = 5, nproc = 1,
-                    nperm = 10000, platform = "450k")
+mCSEATest <- function(rank, methData, pheno = NULL, column = 1,
+                        regionsTypes = c("promoters", "genes", "CGI"),
+                        customAnnotation = NULL, minCpGs = 5, nproc = 1,
+                        nperm = 10000, platform = "450k")
     {
 
     output <- list()
@@ -57,6 +66,35 @@ mCSEATest <- function(rank, regionsTypes = c("promoters", "genes", "CGI"),
 
     if (!typeof(rank) == "double"){
         stop("rank must be a named vector")
+    }
+
+    if (!any(class(methData) == "data.frame" | class(methData) == "matrix" |
+            class(methData) == "SummarizedExperiment" |
+            class(methData) == "RangedSummarizedExperiment")){
+        stop("methData must be a data frame, a matrix or a SummarizedExperiment
+            object")
+    }
+
+    if (!any(class(pheno) == "data.frame" | class(pheno) == "matrix" |
+            is.null(pheno))){
+        stop("pheno must be a data frame, a matrix or NULL")
+    }
+
+    if (!identical(colnames(methData), rownames(pheno))) {
+        if (setdiff(colnames(methData),  rownames(pheno)) == 0 &&
+            setdiff( rownames(pheno), colnames(methData)) == 0) {
+            pheno <- pheno[colnames(methData),]
+        }
+
+        else {
+            stop("Sample labels of methData and pheno must be the same")
+        }
+    }
+
+
+    if (!any(class(column) != "character" |
+             !is.numeric(column))){
+        stop("column must be a character or numeric object")
     }
 
     if (class(regionsTypes) != "character" & !is.null(regionsTypes)){
@@ -72,8 +110,25 @@ mCSEATest <- function(rank, regionsTypes = c("promoters", "genes", "CGI"),
     }
 
     if (class(platform) != "character"){
-        stop("typeInput must be a character object")
+        stop("platform must be a character object")
     }
+
+    # Get data from SummarizedExperiment objects
+
+    if (class(methData) == "SummarizedExperiment" |
+        class(methData) == "RangedSummarizedExperiment" ){
+        if (is.null(pheno)){
+            pheno <- SummarizedExperiment::colData(methData)
+        }
+        methData <- SummarizedExperiment::assay(methData)
+    }
+    else {
+        if (is.null(pheno)) {
+            stop("If methData is not a SummarizedExperiment, you must provide
+                pheno parameter")
+        }
+    }
+
 
     platform <- match.arg(platform, c("450k", "EPIC"))
 
@@ -135,6 +190,11 @@ mCSEATest <- function(rank, regionsTypes = c("promoters", "genes", "CGI"),
         output[["custom"]] <- resGSEA[[1]]
         output[["custom_association"]] <- resGSEA[[2]]
     }
+
+    output[["methData"]] <- methData
+    output[["pheno"]] <- data.frame(Group = factor(pheno[,column]),
+                                    row.names = rownames(pheno))
+    output[["platform"]] <- platform
     return(output)
 }
 

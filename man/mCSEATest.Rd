@@ -4,13 +4,23 @@
 \alias{mCSEATest}
 \title{mCSEA core analysis}
 \usage{
-mCSEATest(rank, regionsTypes = c("promoters", "genes", "CGI"),
-  customAnnotation = NULL, minCpGs = 5, nproc = 1, nperm = 10000,
-  platform = "450k")
+mCSEATest(rank, methData, pheno = NULL, column = 1,
+  regionsTypes = c("promoters", "genes", "CGI"), customAnnotation = NULL,
+  minCpGs = 5, nproc = 1, nperm = 10000, platform = "450k")
 }
 \arguments{
 \item{rank}{A named numeric vector with the ranking statistic of each CpG
 site}
+
+\item{methData}{A data frame or a matrix containing Illumina's CpG probes in
+rows and samples in columns. A SummarizedExperiment object can be used too}
+
+\item{pheno}{A data frame or a matrix containing samples in rows and
+covariates in columns. If NULL (default), pheno is extracted from the
+SummarizedExperiment object}
+
+\item{column}{The column name or number from pheno used to split the samples
+into groups (first column is used by default)}
 
 \item{regionsTypes}{A character or character vector indicating the predefined
 regions to be analyzed. NULL to skip this step and use customAnnotation.}
@@ -30,7 +40,8 @@ this threshold are not tested}
 \value{
 A list with the results of each of the analyzed regions. For each
 region type, a data frame with the results and a list with the probes
-associated to each region are generated
+associated to each region are generated. In addition, this list also contains
+the input methData, pheno and platform objects
 }
 \description{
 Perform a methylated CpG sites enrichment analysis in predefined genomic
@@ -42,8 +53,8 @@ library(mCSEAdata)
 data(mcseadata)
 myRank <- rankProbes(betaTest, phenoTest, refGroup = "Control")
 set.seed(123)
-myResults <- mCSEATest(myRank, regionsTypes = "promoters",
-platform = "EPIC")
+myResults <- mCSEATest(myRank, betaTest, phenoTest,
+regionsTypes = "promoters", platform = "EPIC")
 }
 data(precomputedmCSEA)
 head(myResults[["promoters"]])

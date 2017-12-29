@@ -16,7 +16,8 @@ abstract: >
   Illumina's 450k or EPIC microarrays. The evaluated DMRs are predefined 
   regions (promoters, gene bodies, CpG Islands and user-defined regions).
   This package contains functions to rank the CpG probes, to apply a 
-  GSEA analysis for DMRs identification, and to plot the results.
+  GSEA analysis for DMRs identification, to plot the results and to integrate 
+  them with expression data.
 output:
   BiocStyle::pdf_document
 vignette: >
@@ -52,16 +53,16 @@ methylation levels by microarray analysis"
 # Previous steps
 
 This package is not intended to process raw methylation data. The input of 
-mCSEA is tipically a matrix with the processed beta-values for each probe 
+mCSEA is tipically a matrix with the processed $\beta$-values for each probe 
 and sample. If you start from the raw methylation files (like .idat files) you 
 should first preprocess the data with any of the available packages for 
 that purpose (e.g. `r Biocpkg("minfi")` or `r Biocpkg("ChAMP")`). Minfi 
-includes functions to get a matrix of beta-values (_getBeta()_) or M-values 
-(_getM()_). ChAMP output class depends on the type of analysis performed. For 
-instance, _champ.norm()_ function returns a matrix, while _champ.load()_ 
-returns a list of results, and one of them is a beta-values matrix. So mCSEA 
-is totally compatible with minfi and ChAMP outputs as long as a matrix with 
-the methylation values is obtained.
+includes functions to get a matrix of $\beta$-values (_getBeta()_) or 
+M-values (_getM()_). ChAMP output class depends on the type of analysis 
+performed. For instance, _champ.norm()_ function returns a matrix, while 
+_champ.load()_ returns a list of results, and one of them is a $\beta$-values
+matrix. So mCSEA is totally compatible with minfi and ChAMP outputs as long as 
+a matrix with the methylation values is obtained.
 
 # Step 1: Ranking CpGs probes
 
@@ -72,14 +73,14 @@ _rankProbes()_ output.
 
 We load sample data to show how _rankProbes()_ works: 
 
-```{r}
+```{r, message = FALSE, results='hide'}
 library(mCSEA)
 data(mcseadata)
 ```
 
 We loaded to our R environment **betaTest** and **phenoTest** objects, in 
 addition to association objects (we will talk about these after). **betaTest** 
-is a matrix with the beta-values of 10000 EPIC probes for 20 samples. 
+is a matrix with the $\beta$-values of 10000 EPIC probes for 20 samples. 
 **phenoTest** is a dataframe with the explanatory variable and covariates 
 associated to the samples. When you load your own data, the structure of 
 your objects should be similar.
@@ -97,9 +98,9 @@ covariate to adjust the models. You can change this behaviour modifying
 **explanatory** and **covariates** options.
 
 By default, _rankProbes()_ assumes that the methylation data object contains 
-beta-values and transform them to M-values before calculating the linear 
+$\beta$-values and transform them to M-values before calculating the linear 
 models. If your methylation data object contains M-values, you must specify 
-it (typeInput = "M"). You can also use beta-values for models calculation 
+it (typeInput = "M"). You can also use $\beta$-values for models calculation 
 (typeAnalysis = "beta"), although we do not recommend it due to it has been 
 proven that M-values better accomplish the statistical assumptions of limma 
 analysis (@du10).
@@ -122,33 +123,36 @@ function.
 
 Once you calculated a score for each CpG, you can perform the mCSEA analysis. 
 For that purpose, you should use _mCSEATest()_ function. This function takes 
-as input the vector generated in the previous step. By default, it searches 
+as input the vector generated in the previous step, the methylation data and 
+the phenotype information. By default, it searches 
 for differentially methylated promoters, gene bodies and CpG Islands. You can 
 specify the regions you want to test with _regionsTypes_ option. _minCpGs_ 
 option specifies the minimum amount of CpGs in a region to be considered in 
 the analysis (5 by default). You can increase the number of processors to use 
 with _nproc_ option (recommended if you have enough computational resources). 
 By default, mCSEA performs 10000 
-permutations to calculate p-values, but you can change that with _nperm_ 
+permutations to calculate P-values, but you can change that with _nperm_ 
 option. Finally, you should specify if the array platform is 450k or EPIC with 
 the _platform_ option. 
-Note that _mCSEATest()_ performs permutations to get the p-values, so each 
+Note that _mCSEATest()_ performs permutations to get the P-values, so each 
 time it is executed, the results are not exactly the same. To avoid that, we 
 recommend to include a _set.seed()_ in order to get reproducible results. 
 
 ```{r}
 set.seed(123)
-myResults <- mCSEATest(myRank, regionsTypes = "promoters", platform = "EPIC")
+myResults <- mCSEATest(myRank, betaTest, phenoTest, 
+                        regionsTypes = "promoters", platform = "EPIC")
 ```
 
 _mCSEATest()_ returns a list with the GSEA results and the association objects 
-for each region type analyzed.
+for each region type analyzed, in addition to the input data (methylation, 
+phenotype and platform).
 
 ```{r}
 ls(myResults)
 ```
 
-_promoters_ is a data frame with the following columns (partially extracted 
+**promoters** is a data frame with the following columns (partially extracted 
 from `r Biocpkg("fgsea")` help):
 
 * *pval:* Estimated P-value.
@@ -165,14 +169,14 @@ enrichment score value.
 head(myResults[["promoters"]][,-7])
 ```
 
-On the other hand, _promoters_association_ is a list with the CpG probes 
+On the other hand, **promoters_association** is a list with the CpG probes 
 associated to each feature:
 
 ```{r}
 head(myResults[["promoters_association"]], 3)
 ```
 
-In addition, you can also provide a custom association object between CpG 
+You can also provide a custom association object between CpG 
 probes and regions (_customAnnotation_ option). This object should be a list 
 with a structure similar to this:
 
@@ -184,26 +188,66 @@ head(assocGenes450k, 3)
 
 Once you found some DMRs, you can make a plot with the genomic context of the 
 interesting ones. For that, you must provide _mCSEAPlot()_ function with the 
-methylation matrix, the phenotype object and the _mCSEATest()_ results, and 
+_mCSEATest()_ results, and 
 you must specify which type of region you want to plot and the name of the 
-plotted region (e.g. gene name). There are some graphical parameters you can 
+DMR to be plotted (e.g. gene name). There are some graphical parameters you can
 adjust (see _mCSEAPlot()_ help). Take into account that this function connects 
 to some online servers in order to get genomic information. For that reason, 
 this function could take some minutes to finish the plot, specially the first 
 time it is executed.
 
 ```{r, message = FALSE, results='hide'}
-mCSEAPlot(betaTest, phenoTest, myResults, regionType = "promoters", 
-           region = "CLIC6", platform="EPIC",
+mCSEAPlot(myResults, regionType = "promoters", 
+           dmrName = "CLIC6",
            transcriptAnnotation = "symbol", makePDF = FALSE)
 ```
 
-You can also plot the GSEA results for a region with _mCSEAPlotGSEA()_ 
+You can also plot the GSEA results for a DMR with _mCSEAPlotGSEA()_ 
 function.
 
 ```{r}
-mCSEAPlotGSEA(myRank, myResults, regionType = "promoters", region = "CLIC6")
+mCSEAPlotGSEA(myRank, myResults, regionType = "promoters", dmrName = "CLIC6")
 ```
+
+# Integrating methylation and expression data
+
+If you have both methylation and expression data for the same samples, you can 
+integrate them in order to discover significant associations between 
+methylation changes in a DMR and an expression alterations in a close gene.
+_mCSEAIntegrate()_ considers the DMRs identified by _mCSEATest()_ passing a 
+P-value threshold (0.05 by default). It calculates the mean methylation for 
+each condition using the leading edge CpGs and performs a correlation test 
+between this mean DMR methylation and the expression of close genes. This 
+function automatically finds the genes located within a determined distance 
+(10 kb by default) from the DMR. Only correlations passing thresholds (0.5 for 
+correlation value and 0.05 por P-value by default) are returned.
+
+```{r}
+# Load and prepare expression data
+library(leukemiasEset)
+data(leukemiasEset)
+ALLexpr <- Biobase::exprs(leukemiasEset
+                            [,leukemiasEset[["LeukemiaType"]] == "ALL"])[,1:10]
+NoLexpr <- Biobase::exprs(leukemiasEset
+                            [,leukemiasEset[["LeukemiaType"]] == "NoL"])[,1:10]
+exprTest <- cbind(ALLexpr, NoLexpr)
+colnames(exprTest) <- 1:20
+
+# Run mCSEAIntegrate function
+resultsInt <- mCSEAIntegrate(myResults, exprTest, "promoters", "ENSEMBL")
+
+resultsInt
+```
+
+It is very important to specify the correct gene identifiers used in the 
+expression data (_geneIDs_ parameter). _mCSEAIntegrate()_ automatically 
+generates correlation plots for the significant results and save them in the 
+directory specified by _folder_ parameter (current directory by default).
+
+![Integration plot for GATA2 promoter methylation and ENSG00000179348 
+expression. Note that, actually, both names refers to the same gene, but 
+SYMBOL was used to analyze promoters methylation and ENSEMBL ID was used as 
+gene identifiers in the expression data.](GATA2_ENSG00000179348_promoters.pdf)
 
 # Session info
 ```{r sessionInfo, echo=FALSE}
