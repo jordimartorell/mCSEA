@@ -13,8 +13,6 @@
 #' @param dmrName The DMR of interest to correlate with expression (e.g. gene
 #' name, CGI name...). If NULL (default), all DMRs with P-Value < pcutoff are
 #' selected
-#' @param extend The distance in bp between DMRs and genes to calculate the
-#' correlation
 #' @param pcutoff P-Value threshold to select DMRs if dmrName = NULL
 #' @param minCor Correlation threshold to output the results
 #' @param minP Correlation P-Value threshold to output the results
@@ -30,18 +28,9 @@
 #' @seealso \code{\link{rankProbes}}, \code{\link{mCSEATest}}
 #'
 #' @examples
-#' # Load and prepare expression data
 #' data(precomputedmCSEA)
-#' library(leukemiasEset)
-#' data(leukemiasEset)
-#' ALLexpr <- Biobase::exprs(leukemiasEset
-#'                         [,leukemiasEset[["LeukemiaType"]] == "ALL"])[,1:10]
-#' NoLexpr <- Biobase::exprs(leukemiasEset
-#'                         [,leukemiasEset[["LeukemiaType"]] == "NoL"])[,1:10]
-#' exprTest <- cbind(ALLexpr, NoLexpr)
-#' colnames(exprTest) <- 1:20
+#' data(exprTest)
 #'
-#' # Integrate
 #' resultsInt <- mCSEAIntegrate(myResults, exprTest, "promoters", "ENSEMBL",
 #'                             "GATA2", makePlot = FALSE)
 #'
@@ -54,7 +43,7 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
                                             "custom"),
                             geneIDs = "SYMBOL",
                             dmrName = NULL,
-                            extend = 10000, pcutoff = 0.05,
+                            pcutoff = 0.05,
                             minCor = 0.5, minP = 0.05, makePlot = TRUE,
                             folder = ".", nproc = 1){
 
@@ -89,10 +78,6 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
 
     if (class(dmrName) != "character" & !is.null(dmrName)){
         stop("dmrName must be a character object or NULL")
-    }
-
-    if (any(class(extend) != "numeric" | extend < 0)){
-        stop("extend must be a positive number")
     }
 
     if (any(class(pcutoff) != "numeric" | pcutoff < 0)){
@@ -146,7 +131,7 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
 
     for (reg in regionType) {
         if (is.null(mCSEAResults[[reg]])){
-            warning("mCSEAResults does not contain ", reg, "regionType. ",
+            warning("mCSEAResults does not contain ", reg, " regionType. ",
                     "Skipping it.")
             regionType = regionType[!regionType %in% reg]
         }
@@ -196,7 +181,7 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
 
         parallel::clusterExport(cl=cl,
                                 varlist=c("region2", "methData", "exprData",
-                                            "pheno", "geneIDs", "extend",
+                                            "pheno", "geneIDs",
                                             "minCor", "minP", "reg", "corCpGs",
                                             "annot", "rangeGenes", "folder",
                                             "makePlot", ".integrateCore"),
@@ -206,7 +191,7 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
                             function(region2) {
                                 .integrateCore(region2, methData=methData,
                                                 exprData=exprData, pheno=pheno,
-                                                geneIDs=geneIDs, extend=extend,
+                                                geneIDs=geneIDs,
                                                 minCor=minCor, minP=minP,
                                                 regionType=reg, corCpGs=corCpGs,
                                                 annot=annot,
@@ -223,15 +208,14 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
                                     decreasing=TRUE),]
     intResults[["adjPValue"]] <- p.adjust(intResults[["PValue"]],
                                             method = "fdr")
-    rownames(intResults) <- 1:nrow(intResults)
+    rownames(intResults) <- seq_len(nrow(intResults))
 
-    # return(list(intResults=intResults, exprData=exprData))
     return(intResults)
 
 }
 
 .integrateCore <- function(indRegion, methData, exprData, pheno, geneIDs,
-                            extend, minCor, minP, regionType, corCpGs, annot,
+                            minCor, minP, regionType, corCpGs, annot,
                             rangeGenes, folder, makePlot){
 
     corCpGs <- corCpGs[[indRegion]]
@@ -245,14 +229,13 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
 
     annotCpGs <- annot[corCpGs]
 
-    nearGenes <- IRanges::subsetByOverlaps(rangeGenes, annotCpGs,
-                                                    maxgap=extend)
+    nearGenes <- IRanges::subsetByOverlaps(rangeGenes, annotCpGs, maxgap = 1500)
 
     for (gene in unlist(S4Vectors::mcols(nearGenes)[,geneIDs])){
 
         if (gene %in% rownames(exprData)){
 
-            features <- gen <- correlations <- pvals <- c()
+            feat <- gen <- correlations <- pvals <- c()
 
             expr1 <- colMeans(exprData[gene, pheno == levels(pheno)[1]])
             expr2 <- colMeans(exprData[gene, pheno == levels(pheno)[2]])
@@ -260,10 +243,22 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
 
             corResult <- cor.test(meth, expr)
 
-            if (corResult[["p.value"]] < minCor &
-                abs(corResult[["estimate"]]) > minCor){
+            interesting <- TRUE
 
-                features <- c(features, indRegion)
+            if (regionType == "promoters" & corResult[["estimate"]] > 0) {
+                interesting <- FALSE
+            }
+
+            else if (regionType == "genes" & corResult[["estimate"]] < 0) {
+                interesting <- FALSE
+            }
+
+            if (corResult[["p.value"]] < minCor &
+                abs(corResult[["estimate"]]) > minCor &
+                interesting){
+
+
+                feat <- c(feat, indRegion)
                 gen <- c(gen, gene)
                 correlations <- c(correlations, corResult[["estimate"]])
                 pvals <- c(pvals, corResult[["p.value"]])
@@ -334,8 +329,8 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
         }
     }
 
-    if (exists("features") && length(features) > 0) {
-        out <- data.frame(Feature=features,
+    if (exists("feat") && length(feat) > 0) {
+        out <- data.frame(Feature=feat,
                             regionType=regionType,
                             Gene=gen, Correlation=correlations,
                             PValue=pvals)

@@ -93,7 +93,7 @@ mCSEATest <- function(rank, methData, pheno = NULL, column = 1,
 
 
     if (!any(class(column) != "character" |
-             !is.numeric(column))){
+            !is.numeric(column))){
         stop("column must be a character or numeric object")
     }
 
@@ -230,9 +230,10 @@ mCSEATest <- function(rank, methData, pheno = NULL, column = 1,
     message(paste(sum(fgseaDataFrame[["padj"]] < 0.05),
                 "DMRs found (padj < 0.05)"))
     fgseaSorted <- fgseaDataFrame[order(fgseaDataFrame[["NES"]]),]
-    fgseaSorted[,7] <- sapply(fgseaSorted[,7],
+    fgseaSorted[,7] <- vapply(fgseaSorted[,7],
                             function(x) {paste(unlist(x),
-                                                collapse=", ")})
+                                                collapse=", ")},
+                            "")
 
     return(list(fgseaSorted, genes))
 }

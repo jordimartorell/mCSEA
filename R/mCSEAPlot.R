@@ -150,7 +150,7 @@ mCSEAPlot <- function(mCSEAResults, regionType, dmrName,
     if (chromosome) {
         #Ideogram
         itrack <- Gviz::IdeogramTrack(genome="hg19", chromosome=Chromosome,
-                                    bands=mCSEA::bandTable)
+                                    bands=mCSEAdata::bandTable)
 
         #Genome axis
         gtrack <- Gviz::GenomeAxisTrack()
@@ -211,7 +211,7 @@ mCSEAPlot <- function(mCSEAResults, regionType, dmrName,
 
     if (leadingEdge){
 
-        leadingValues <- data.frame(c(dataValues[,1:3]), -1,
+        leadingValues <- data.frame(c(dataValues[,seq_len(3)]), -1,
                                     row.names=rownames(dataValues))
 
         for (site in rownames(leadingValues)) {

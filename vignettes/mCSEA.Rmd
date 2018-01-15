@@ -48,6 +48,17 @@ methylation levels by microarray analysis"
     year: 2010
   volume: 11
   issue: 587
+- id: jones12
+  title: "Functions of DNA Methylation: islands, start sites, 
+gene bodies and beyond"
+  author:
+  - family: Jones
+    given: Peter A.
+  container-title: Nature Reviews Genetics
+  issued:
+    year: 2012
+  volume: 13
+  issue: 7
 ---
 
 # Previous steps
@@ -219,19 +230,24 @@ P-value threshold (0.05 by default). It calculates the mean methylation for
 each condition using the leading edge CpGs and performs a correlation test 
 between this mean DMR methylation and the expression of close genes. This 
 function automatically finds the genes located within a determined distance 
-(10 kb by default) from the DMR. Only correlations passing thresholds (0.5 for 
-correlation value and 0.05 por P-value by default) are returned.
+(1.5 kb) from the DMR. Only correlations passing thresholds (0.5 for 
+correlation value and 0.05 por P-value by default) are returned. For 
+promoters, only negative correlations are returned due to this kind of 
+relationship between promoters methylation and gene expression has been 
+largely observed (@jones12). On the contrary, only positive correlations 
+between gene bodies methylation and gene expression are returned, due to this 
+is a common relationship observed (@jones12). For CpG islands and custom 
+regions, both positive and negative correlations are returned, due to they can 
+be located in both promoters and gene bodies.
+
+To test this function, we extracted a subset of 100 genes expression from bone 
+marrows of 10 healthy and 10 leukemia patients. Data was extracted from 
+`r Biocpkg("leukemiasEset")` package.
 
 ```{r}
-# Load and prepare expression data
-library(leukemiasEset)
-data(leukemiasEset)
-ALLexpr <- Biobase::exprs(leukemiasEset
-                            [,leukemiasEset[["LeukemiaType"]] == "ALL"])[,1:10]
-NoLexpr <- Biobase::exprs(leukemiasEset
-                            [,leukemiasEset[["LeukemiaType"]] == "NoL"])[,1:10]
-exprTest <- cbind(ALLexpr, NoLexpr)
-colnames(exprTest) <- 1:20
+# Load expression data
+data(exprTest)
+head(exprTest)
 
 # Run mCSEAIntegrate function
 resultsInt <- mCSEAIntegrate(myResults, exprTest, "promoters", "ENSEMBL")
