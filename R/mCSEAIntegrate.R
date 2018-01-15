@@ -167,14 +167,10 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
         names(corCpGs) <- region2
 
         if (platform == "450k") {
-            rsobj <- minfi::RatioSet(methData[unlist(corCpGs),], annotation=c(
-                array="IlluminaHumanMethylation450k", annotation="ilmn12.hg19"))
-            annot <- minfi::getLocations(rsobj)
+            annot <- mCSEAdata::annot450K
         }
         else {
-            rsobj <- minfi::RatioSet(methData[unlist(corCpGs),], annotation=c(
-                array="IlluminaHumanMethylationEPIC",annotation="ilm10b2.hg19"))
-            annot <- minfi::getLocations(rsobj)
+            annot <- mCSEAdata::annotEPIC
         }
 
         cl <- parallel::makeCluster(nproc)

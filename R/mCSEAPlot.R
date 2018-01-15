@@ -116,28 +116,24 @@ mCSEAPlot <- function(mCSEAResults, regionType, dmrName,
     utils::setTxtProgressBar(progress, 1)
 
     if (platform == "450k") {
-        rsobj <- minfi::RatioSet(CpGs, annotation=c(
-            array="IlluminaHumanMethylation450k", annotation="ilmn12.hg19"))
         utils::setTxtProgressBar(progress, 2)
-        annot <- minfi::getAnnotation(rsobj, what = c("Locations", "Other"))
+        annot <- mCSEAdata::annot450K
     }
     else {
-        rsobj <- minfi::RatioSet(CpGs, annotation=c(
-            array="IlluminaHumanMethylationEPIC",annotation="ilm10b2.hg19"))
         utils::setTxtProgressBar(progress, 2)
-        annot <- minfi::getAnnotation(rsobj, what = c("Locations", "Other"))
+        annot <- mCSEAdata::annotEPIC
     }
 
     utils::setTxtProgressBar(progress, 3)
 
-    positions <- annot[c(cgs.plot), "pos"]
-    Chromosome <- annot[c(cgs.plot[1]), "chr"]
+    positions <- IRanges::start(IRanges::ranges(annot[c(cgs.plot),]))
+    Chromosome <- as.character(GenomicRanges::seqnames(annot[c(cgs.plot[1])]))
     From <- min(positions) - extend
     To <- max(positions) + extend
 
     #Check for annotation
-    annotSubset <- annot[rownames(annot) %in% cgs.plot,]
-    probes <- rownames(annotSubset)
+    annotSubset <- annot[names(annot) %in% cgs.plot,]
+    probes <- names(annotSubset)
 
     Phenotype <- factor(as.character(pheno[,1]))
 
@@ -186,7 +182,7 @@ mCSEAPlot <- function(mCSEAResults, regionType, dmrName,
 
     #Data track
     annotSubset <- annotSubset[match(rownames(dataSubset),
-                                    rownames(annotSubset)),]
+                                    names(annotSubset)),]
 
     #Reorder columns
     dataSubsetOrdered <- dataSubset[,order(Phenotype)]
@@ -195,8 +191,9 @@ mCSEAPlot <- function(mCSEAResults, regionType, dmrName,
     nSamples <- nrow(dataSubsetOrdered)
 
     #Place data
-    dataValues <- data.frame(c(data.frame(annotSubset[,c("pos","pos","chr")]),
-                            as.data.frame(dataSubsetOrdered)))
+    dataValues <- data.frame(c(data.frame(annotSubset)[,c("start","start",
+                                                        "seqnames")]),
+                            as.data.frame(dataSubsetOrdered))
     rownames(dataValues) <- rownames(dataSubsetOrdered)
     colnames(dataValues)[1] <- "start"
     colnames(dataValues)[2] <- "end"

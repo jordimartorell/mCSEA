@@ -90,7 +90,8 @@ data(mcseadata)
 ```
 
 We loaded to our R environment **betaTest** and **phenoTest** objects, in 
-addition to association objects (we will talk about these after). **betaTest** 
+addition to **exprTest**, annotation objects and association objects 
+(we will talk about these after). **betaTest** 
 is a matrix with the $\beta$-values of 10000 EPIC probes for 20 samples. 
 **phenoTest** is a dataframe with the explanatory variable and covariates 
 associated to the samples. When you load your own data, the structure of 
@@ -241,13 +242,12 @@ regions, both positive and negative correlations are returned, due to they can
 be located in both promoters and gene bodies.
 
 To test this function, we extracted a subset of 100 genes expression from bone 
-marrows of 10 healthy and 10 leukemia patients. Data was extracted from 
-`r Biocpkg("leukemiasEset")` package.
+marrows of 10 healthy and 10 leukemia patients (**exprTest**). Data was 
+extracted from `r Biocpkg("leukemiasEset")` package.
 
 ```{r}
-# Load expression data
-data(exprTest)
-head(exprTest)
+# Explore expression data
+head(exprTest, 3)
 
 # Run mCSEAIntegrate function
 resultsInt <- mCSEAIntegrate(myResults, exprTest, "promoters", "ENSEMBL")
