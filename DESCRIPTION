@@ -1,8 +1,8 @@
 Package: mCSEA
 Type: Package
 Title: Methylated CpGs Set Enrichment Analysis
-Version: 0.99.10
-Author: Jordi Martorell Marugán
+Version: 0.99.11
+Author: Jordi Martorell Marugán and Pedro Carmona Sáez
 Maintainer: Jordi Martorell Marugán <jmartorellm@gmail.com>
 Description: Identification of diferentially methylated regions (DMRs) in predefined regions
     (promoters, CpG islands...) from the human genome using Illumina's 450K or EPIC microarray data.
