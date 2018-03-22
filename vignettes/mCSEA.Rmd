@@ -131,6 +131,13 @@ object. In that case, if you don't specify a **pheno** object, phenotypes
 will be extracted from the SummarizedExperiment object with _colData()_ 
 function.
 
+## Paired analysis
+
+It is possible to take into account paired samples in _rankProbes()_
+analysis. For that aim, you should use paired = TRUE parameter and 
+specify the column in pheno containing pairing information 
+(pairColumn parameter).
+
 # Step 2: Searching DMRs in predefined regions
 
 Once you calculated a score for each CpG, you can perform the mCSEA analysis. 

@@ -8,12 +8,17 @@
 #' @param pheno A data frame or a matrix containing samples in rows and
 #' covariates in columns. If NULL (default), pheno is extracted from the
 #' SummarizedExperiment object
+#' @param paired Perform a paired t-test (default = FALSE)
 #' @param explanatory The column name or position from pheno used to perform the
 #'  comparison between groups (default = first column)
 #' @param covariates A list or character vector with column names from pheno
 #' used as data covariates in the linear model
-#' @param refGroup The group name or position from explanatory variable used to
-#' perform the comparison (default = first group)
+#' @param pairColumn Only for paired analysis. The column name or position from
+#' pheno used to connect the paired samples (default = NULL)
+#' @param caseGroup The group name or position from explanatory variable used as
+#' cases to perform the comparison (default = first group)
+#' @param refGroup The group name or position from explanatory variable used as
+#' reference to perform the comparison (default = second group)
 #' @param continuous A list or character vector with columns names from pheno
 #' which should be treated as continuous variables (default = none)
 #' @param typeInput Type of input methylation data. "beta" for Beta-values and
@@ -38,8 +43,9 @@
 #' head(myRank)
 #' @export
 
-rankProbes <- function(methData, pheno = NULL, explanatory = 1,
-                    covariates = c(), refGroup = 1, continuous = NULL,
+rankProbes <- function(methData, pheno = NULL, paired = FALSE, explanatory = 1,
+                    covariates = c(), pairColumn = c(), caseGroup = 1,
+                    refGroup = 2, continuous = NULL,
                     typeInput = "beta", typeAnalysis = "M")
     {
 
@@ -56,6 +62,17 @@ rankProbes <- function(methData, pheno = NULL, explanatory = 1,
         stop("pheno must be a data frame, a matrix or NULL")
     }
 
+    if (class(paired) != "logical"){
+        stop("paired must be a logical object (TRUE/FALSE)")
+    }
+
+    if (paired) {
+        if (!any(class(pairColumn) != "character" |
+                !is.numeric(pairColumn))){
+            stop("pairColumn must be a character or numeric object")
+        }
+    }
+
     if (!any(class(explanatory) != "character" |
             !is.numeric(explanatory))){
         stop("explanatory must be a character or numeric object")
@@ -64,6 +81,11 @@ rankProbes <- function(methData, pheno = NULL, explanatory = 1,
     if (!any(class(covariates) == "character" | class(covariates) == "list" |
             is.null(covariates))){
         stop("covariates must be a character vector, a list or NULL")
+    }
+
+    if (!any(class(caseGroup) != "character" |
+            class(caseGroup) != "numeric")){
+        stop("caseGroup must be a character or numeric object")
     }
 
     if (!any(class(refGroup) != "character" |
@@ -140,6 +162,14 @@ rankProbes <- function(methData, pheno = NULL, explanatory = 1,
         covariates <- colnames(pheno)[covariates]
     }
 
+    if (is.numeric(pairColumn)) {
+        pairColumn <- colnames(pheno)[pairColumn]
+    }
+
+    if (class(caseGroup) == "numeric") {
+        caseGroup <- levels(pheno[,explanatory])[caseGroup]
+    }
+
     if (class(refGroup) == "numeric") {
         refGroup <- levels(pheno[,explanatory])[refGroup]
     }
@@ -148,8 +178,17 @@ rankProbes <- function(methData, pheno = NULL, explanatory = 1,
         stop("You specified some variable(s) as both explanatory and covariate")
     }
 
-    pheno <- data.frame(pheno[,c(explanatory, covariates)])
-    colnames(pheno) <- c(explanatory, covariates)
+
+
+    samples2Include <- rownames(pheno)[pheno[,explanatory] %in%
+                                        c(caseGroup, refGroup)]
+
+    methData <- methData[,samples2Include]
+
+    pheno <- data.frame(pheno[samples2Include, c(explanatory, covariates,
+                                                pairColumn)])
+    colnames(pheno) <- c(explanatory, covariates, pairColumn)
+    pheno <- droplevels(pheno)
 
     # Prepare methylation data for limma
     if (typeInput == "beta") {
@@ -186,11 +225,14 @@ rankProbes <- function(methData, pheno = NULL, explanatory = 1,
     message(paste("\tExplanatory variable:", explanatory))
 
     if (is.factor(pheno[,explanatory])){
+        message(paste("\tCase group:", caseGroup))
         message(paste("\tReference group:", refGroup))
-        pheno[,explanatory] <- relevel(pheno[,explanatory], ref=refGroup)
+        message(paste("\tTotal samples:", ncol(methData)))
+        pheno[,explanatory] <- relevel(pheno[,explanatory],
+                                        ref=refGroup)
     }
 
-    if (is.null(covariates)){
+    if (is.null(covariates) && !paired){
         message("\tCovariates: None")
         message(paste("\tCategorical variables:",
                     paste(categorical, collapse=" ")))
@@ -203,8 +245,10 @@ rankProbes <- function(methData, pheno = NULL, explanatory = 1,
         }
 
         model <- model.matrix(~get(explanatory), data=pheno)
+
         }
     else {
+        message(paste("\tPaired analysis using", pairColumn, "column"))
         message(paste("\tCovariates:", paste(covariates, collapse=" ")))
         message(paste("\tCategorical variables:",
                     paste(categorical, collapse=" ")))

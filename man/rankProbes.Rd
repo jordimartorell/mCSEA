@@ -4,9 +4,9 @@
 \alias{rankProbes}
 \title{Rank CpG probes}
 \usage{
-rankProbes(methData, pheno = NULL, explanatory = 1, covariates = c(),
-  refGroup = 1, continuous = NULL, typeInput = "beta",
-  typeAnalysis = "M")
+rankProbes(methData, pheno = NULL, paired = FALSE, explanatory = 1,
+  covariates = c(), pairColumn = c(), caseGroup = 1, refGroup = 2,
+  continuous = NULL, typeInput = "beta", typeAnalysis = "M")
 }
 \arguments{
 \item{methData}{A data frame or a matrix containing Illumina's CpG probes in
@@ -16,14 +16,22 @@ rows and samples in columns. A SummarizedExperiment object can be used too}
 covariates in columns. If NULL (default), pheno is extracted from the
 SummarizedExperiment object}
 
+\item{paired}{Perform a paired t-test (default = FALSE)}
+
 \item{explanatory}{The column name or position from pheno used to perform the
 comparison between groups (default = first column)}
 
 \item{covariates}{A list or character vector with column names from pheno
 used as data covariates in the linear model}
 
-\item{refGroup}{The group name or position from explanatory variable used to
-perform the comparison (default = first group)}
+\item{pairColumn}{Only for paired analysis. The column name or position from
+pheno used to connect the paired samples (default = NULL)}
+
+\item{caseGroup}{The group name or position from explanatory variable used as
+cases to perform the comparison (default = first group)}
+
+\item{refGroup}{The group name or position from explanatory variable used as
+reference to perform the comparison (default = second group)}
 
 \item{continuous}{A list or character vector with columns names from pheno
 which should be treated as continuous variables (default = none)}
