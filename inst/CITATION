@@ -1,0 +1,12 @@
+citEntry(entry="ARTICLE",
+    author = as.person(c("Jordi Martorell-Marugan", "Victor Gonzalez-Rumayor", "Pedro Carmona-Saez")),
+    title = "mCSEA: Detecting subtle differentially methylated regions",
+    year = "2018",
+    doi = "10.1101/293381",
+    publisher = "Cold Spring Harbor Labs Journals",
+    URL = "https://www.biorxiv.org/content/early/2018/04/06/293381",
+    journal = "bioRxiv",
+    textVersion = paste("Martorell-Marugan J., Gonzalez-Rumayor V. and Carmona-Saez, P..",
+                        "mCSEA: Detecting subtle differentially methylated regions.",
+                        "bioRxiv (2018), doi:10.1101/293381")
+)

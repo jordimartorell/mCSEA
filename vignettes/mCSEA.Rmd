@@ -157,7 +157,7 @@ Note that _mCSEATest()_ performs permutations to get the P-values, so each
 time it is executed, the results are not exactly the same. To avoid that, we 
 recommend to include a _set.seed()_ in order to get reproducible results. 
 
-```{r}
+```{r, warning=FALSE}
 set.seed(123)
 myResults <- mCSEATest(myRank, betaTest, phenoTest, 
                         regionsTypes = "promoters", platform = "EPIC")
