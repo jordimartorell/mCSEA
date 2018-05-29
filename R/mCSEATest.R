@@ -184,7 +184,7 @@ mCSEATest <- function(rank, methData, pheno = NULL, column = 1,
 
     if (!is.null(customAnnotation)) {
 
-        resGSEA <- .performGSEA(region, rank, platform, customAnnotation,
+        resGSEA <- .performGSEA("custom", rank, platform, customAnnotation,
                                 minCpGs, nperm, nproc)
 
         output[["custom"]] <- resGSEA[[1]]
