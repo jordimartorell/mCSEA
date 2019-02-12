@@ -81,8 +81,8 @@ mCSEATest <- function(rank, methData, pheno = NULL, column = 1,
     }
 
     if (!identical(colnames(methData), rownames(pheno))) {
-        if (setdiff(colnames(methData),  rownames(pheno)) == 0 &&
-            setdiff( rownames(pheno), colnames(methData)) == 0) {
+        if (length(setdiff(colnames(methData),  rownames(pheno))) == 0 &&
+            length(setdiff( rownames(pheno), colnames(methData))) == 0) {
             pheno <- pheno[colnames(methData),]
         }
 

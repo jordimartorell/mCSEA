@@ -122,6 +122,10 @@ rankProbes <- function(methData, pheno = NULL, paired = FALSE, explanatory = 1,
         }
     }
 
+    # Check that colnames of methData and rownames of pheno are both characters
+    colnames(methData) = as.character(colnames(methData))
+    rownames(pheno) = as.character(rownames(pheno))
+
     if (is.null(continuous)){
         continuous <- c()
         categorical <- colnames(pheno)
