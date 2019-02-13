@@ -11,8 +11,11 @@ Depends: R (>= 3.5), mCSEAdata, Homo.sapiens
 Suggests: Biobase,
         BiocGenerics,
         BiocStyle,
+        FlowSorted.Blood.450k,
         knitr,
         leukemiasEset,
+        minfi,
+        minfiData,
         rmarkdown,
         RUnit
 Imports: fgsea,

@@ -114,8 +114,8 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
     }
 
     if (!identical(colnames(methData), colnames(exprData))) {
-        if (setdiff(colnames(methData), colnames(exprData)) == 0 &&
-            setdiff(colnames(exprData), colnames(methData)) == 0) {
+        if (length(setdiff(colnames(methData), colnames(exprData))) == 0 &&
+            length(setdiff(colnames(exprData), colnames(methData))) == 0) {
             exprData <- exprData[,colnames(methData)]
         }
 
@@ -218,8 +218,10 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
 
     pheno <- pheno[,1]
 
-    meth1 <- colMeans(methData[corCpGs, pheno == levels(pheno)[1]])
-    meth2 <- colMeans(methData[corCpGs, pheno == levels(pheno)[2]])
+    meth1 <- colMeans(methData[corCpGs, pheno == levels(pheno)[1]],
+                        na.rm = TRUE)
+    meth2 <- colMeans(methData[corCpGs, pheno == levels(pheno)[2]],
+                        na.rm = TRUE)
     meth <- c(meth1, meth2)
 
 
@@ -233,8 +235,10 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
 
             feat <- gen <- correlations <- pvals <- c()
 
-            expr1 <- colMeans(exprData[gene, pheno == levels(pheno)[1]])
-            expr2 <- colMeans(exprData[gene, pheno == levels(pheno)[2]])
+            expr1 <- colMeans(exprData[gene, pheno == levels(pheno)[1]],
+                                na.rm = TRUE)
+            expr2 <- colMeans(exprData[gene, pheno == levels(pheno)[2]],
+                                na.rm = TRUE)
             expr <- c(expr1, expr2)
 
             corResult <- cor.test(meth, expr)
@@ -249,7 +253,7 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
                 interesting <- FALSE
             }
 
-            if (corResult[["p.value"]] < minCor &
+            if (corResult[["p.value"]] < minP &
                 abs(corResult[["estimate"]]) > minCor &
                 interesting){
 

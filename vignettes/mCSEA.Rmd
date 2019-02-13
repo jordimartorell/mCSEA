@@ -9,7 +9,7 @@ author:
   - Bioinformatics Unit. GENYO, Centre for Genomics and Oncological Research
   email: pedro.carmona@genyo.es
 package: mCSEA
-date: "`r doc_date()`"
+date: "`r BiocStyle::doc_date()`"
 abstract: >
   mCSEA (methylathed CpGs Set Enrichment Analysis) searches Differentially
   Methylated Regions (DMRs) between conditions using methylation data from 
@@ -20,6 +20,8 @@ abstract: >
   them with expression data.
 output:
   BiocStyle::pdf_document
+#output: word_document
+
 vignette: >
   %\VignetteIndexEntry{Predefined DMRs identification with mCSEA package}
   %\VignetteEngine{knitr::rmarkdown}
@@ -59,21 +61,92 @@ gene bodies and beyond"
     year: 2012
   volume: 13
   issue: 7
+  
+  
+- id: mcgregor16
+  title: "An evaluation of methods correcting for cell-type heterogeneity in DNA methylation studies"
+  author:
+  - family: McGregor
+    given: K
+  - family: Bernatsky
+    given: S
+  - family: Colmegna
+    given: I
+  - family: Pastinen
+    given: T
+  - family: Labbe
+    given: A
+  - family: Greenwood
+    given: CMT
+  container-title: Genome Biology
+  issued:
+    year: 2016
+  volume: 17
+  issue: 84
+  
+- id: jones12
+  title: "Functions of DNA Methylation: islands, start sites, 
+gene bodies and beyond"
+  author:
+  - family: Jones
+    given: Peter A.
+  container-title: Nature Reviews Genetics
+  issued:
+    year: 2012
+  volume: 13
+  issue: 7
 ---
 
 # Previous steps
 
-This package is not intended to process raw methylation data. The input of 
+The input of 
 mCSEA is tipically a matrix with the processed $\beta$-values for each probe 
 and sample. If you start from the raw methylation files (like .idat files) you 
 should first preprocess the data with any of the available packages for 
-that purpose (e.g. `r Biocpkg("minfi")` or `r Biocpkg("ChAMP")`). Minfi 
+that purpose (e.g. `r BiocStyle::Biocpkg("minfi")` or 
+`r BiocStyle::Biocpkg("ChAMP")`). Minfi 
 includes functions to get a matrix of $\beta$-values (_getBeta()_) or 
 M-values (_getM()_). ChAMP output class depends on the type of analysis 
 performed. For instance, _champ.norm()_ function returns a matrix, while 
 _champ.load()_ returns a list of results, and one of them is a $\beta$-values
 matrix. So mCSEA is totally compatible with minfi and ChAMP outputs as long as 
 a matrix with the methylation values is obtained.
+
+## Reading .idat files
+
+Here we provide a minimal example to read .idat files with 
+`r BiocStyle::Biocpkg("minfi")` package. A samplesheet must 
+be provided in order to read the raw files and generate a 
+_RGChannelSet_ object. For more information about this step, 
+read minfi's [vignette](https://bioconductor.org/packages/release/bioc/vignettes/minfi/inst/doc/minfi.html#3_reading_data).
+
+```{r, message = FALSE}
+library(minfi)
+minfiDataDir <- system.file("extdata", package = "minfiData")
+targets <- read.metharray.sheet(minfiDataDir, verbose = FALSE)
+RGset <- read.metharray.exp(targets = targets)
+```
+
+
+## Cell type heterogeneity correction
+
+Different cell types proportions across samples are one of the major 
+sources of variability in methylation data from tissues like blood or 
+saliva (@mcgregor16). There are a lot of packages which can be used to 
+estimate cell types proportions in each sample in order to correct for 
+this bias (reviewed in @mcgregor16). Here we supply an example where blood 
+reference data is used to estimate cell types proportions of each blood sample.
+
+```{r, message=FALSE}
+library(FlowSorted.Blood.450k)
+library(mCSEA)
+data(mcseadata)
+
+cellCounts = estimateCellCounts(RGset)
+print(cellCounts)
+```
+
+These proportions could be introduced as covariates in the linear models.
 
 # Step 1: Ranking CpGs probes
 
@@ -103,7 +176,7 @@ print(phenoTest)
 ```
 
 _rankProbes()_ function uses these two objects as input and apply a linear 
-model with `r Biocpkg("limma")` package. By default, _rankProbes()_ 
+model with `r BiocStyle::Biocpkg("limma")` package. By default, _rankProbes()_ 
 considers the first column of the phenotypes table as the explanatory variable 
 in the model (e.g. cases and controls) and does not take into account any 
 covariate to adjust the models. You can change this behaviour modifying 
@@ -172,7 +245,7 @@ ls(myResults)
 ```
 
 **promoters** is a data frame with the following columns (partially extracted 
-from `r Biocpkg("fgsea")` help):
+from `r BiocStyle::Biocpkg("fgsea")` help):
 
 * *pval:* Estimated P-value.
 * *padj:* P-value adjusted by BH method.
@@ -250,7 +323,7 @@ be located in both promoters and gene bodies.
 
 To test this function, we extracted a subset of 100 genes expression from bone 
 marrows of 10 healthy and 10 leukemia patients (**exprTest**). Data was 
-extracted from `r Biocpkg("leukemiasEset")` package.
+extracted from `r BiocStyle::Biocpkg("leukemiasEset")` package.
 
 ```{r}
 # Explore expression data
