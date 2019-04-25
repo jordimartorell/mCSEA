@@ -156,6 +156,9 @@ mCSEAPlot <- function(mCSEAResults, regionType, dmrName,
 
     if (genes){
         #Genes track from UCSC
+        bm <- biomaRt::useMart(host="grch37.ensembl.org", 
+                                biomart="ENSEMBL_MART_ENSEMBL", 
+                                dataset="hsapiens_gene_ensembl")
         biomTrack <- Gviz::BiomartGeneRegionTrack(genome="hg19",
                                                 chromosome=Chromosome,
                                                 start=From, end=To ,
@@ -163,7 +166,8 @@ mCSEAPlot <- function(mCSEAResults, regionType, dmrName,
                                                 stacking="squish",
                                                 just.group="above",
                                                 transcriptAnnotation=
-                                                    transcriptAnnotation)
+                                                    transcriptAnnotation,
+                                                biomart=bm)
     }
     utils::setTxtProgressBar(progress, 6)
 
