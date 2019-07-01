@@ -218,10 +218,16 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
 
     pheno <- pheno[,1]
 
-    meth1 <- colMeans(methData[corCpGs, pheno == levels(pheno)[1]],
-                        na.rm = TRUE)
-    meth2 <- colMeans(methData[corCpGs, pheno == levels(pheno)[2]],
-                        na.rm = TRUE)
+    if (length(corCpGs) > 1) {
+        meth1 <- colMeans(methData[corCpGs, pheno == levels(pheno)[1]], 
+                            na.rm = TRUE)
+        meth2 <- colMeans(methData[corCpGs, pheno == levels(pheno)[2]], 
+                            na.rm = TRUE)
+	}
+	else {
+		meth1 <- methData[corCpGs, pheno == levels(pheno)[1]]
+		meth2 <- methData[corCpGs, pheno == levels(pheno)[2]]
+	}
     meth <- c(meth1, meth2)
 
 

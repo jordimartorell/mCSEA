@@ -46,7 +46,8 @@ mCSEAPlot <- function(mCSEAResults, regionType, dmrName,
                         extend = 1000,
                         chromosome = TRUE, leadingEdge = TRUE, CGI = FALSE,
                         genes = TRUE, transcriptAnnotation = "transcript",
-                        makePDF = TRUE){
+                        makePDF = TRUE, 
+                        col = c("blue", "magenta", "green", "red", "black")){
 
     progress <- utils::txtProgressBar(min=0, max=10, style=3)
 
@@ -70,23 +71,26 @@ mCSEAPlot <- function(mCSEAResults, regionType, dmrName,
     }
 
     if (class(chromosome) != "logical"){
-        stop("chromosome must be a logical object (TRUE7FALSE)")
+        stop("chromosome must be a logical object (TRUE/FALSE)")
     }
 
     if (class(leadingEdge) != "logical"){
-        stop("leadingEdge must be a logical object (TRUE7FALSE)")
+        stop("leadingEdge must be a logical object (TRUE/FALSE)")
     }
 
     if (class(CGI) != "logical"){
-        stop("CGI must be a logical object (TRUE7FALSE)")
+        stop("CGI must be a logical object (TRUE/FALSE)")
     }
 
     if (class(genes) != "logical"){
-        stop("genes must be a logical object (TRUE7FALSE)")
+        stop("genes must be a logical object (TRUE/FALSE)")
     }
 
     if (class(makePDF) != "logical"){
-        stop("makePDF must be a logical object (TRUE7FALSE)")
+        stop("makePDF must be a logical object (TRUE/FALSE)")
+    }
+    if (!is.vector(col)){
+        stop("col must be a character or numeric vector")
     }
 
     transcriptAnnotation <- match.arg(transcriptAnnotation,
@@ -203,10 +207,16 @@ mCSEAPlot <- function(mCSEAResults, regionType, dmrName,
     colnames(dataValues)[2] <- "end"
     colnames(dataValues)[3] <- "chromosome"
     dataValues[2] <- dataValues[2] + 1
+
+    if (length(col) < nlevels(phenotypeOrdered)){
+        stop("You specified less colors than phenotype classes")
+    }
+
     dtrack <- Gviz::DataTrack(dataValues, genome="hg19",
                             type=c("g","p","a"),
                             name="DNA Methylation",
-                            groups=phenotypeOrdered)
+                            groups=phenotypeOrdered,
+                            col = col)
     utils::setTxtProgressBar(progress, 8)
 
 
