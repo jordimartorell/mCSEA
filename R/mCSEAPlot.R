@@ -19,6 +19,7 @@
 #' "transcript" (default), "symbol", "gene", "exon" or "feature"
 #' @param makePDF If TRUE, save the plot in pdf format in the working
 #' directory. Otherwise, draw the plot in the active graphics window
+#' @param col Vector with colors to plot methylation in different groups
 #'
 #' @return 'NULL'
 #'
