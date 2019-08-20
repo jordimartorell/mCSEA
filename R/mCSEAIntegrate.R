@@ -58,6 +58,13 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
     methData <- mCSEAResults[["methData"]]
     platform <- mCSEAResults[["platform"]]
 
+    # Remove genes with Standar Deviation = 0
+    ngenesPre = nrow(exprData)
+    exprData = exprData[apply(exprData, 1, sd) != 0,]
+    ngenesPost = nrow(exprData)
+    
+    message(ngenesPre -  ngenesPost, " genes removed from exprData due to Standar Deviation = 0")
+
     # Check input objects
 
     if (any(class(mCSEAResults) != "list" | length(mCSEAResults) < 5)){
@@ -225,8 +232,8 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
                             na.rm = TRUE)
 	}
 	else {
-		meth1 <- methData[corCpGs, pheno == levels(pheno)[1]]
-		meth2 <- methData[corCpGs, pheno == levels(pheno)[2]]
+		meth1 <- unlist(methData[corCpGs, pheno == levels(pheno)[1]])
+		meth2 <- unlist(methData[corCpGs, pheno == levels(pheno)[2]])
 	}
     meth <- c(meth1, meth2)
 
@@ -247,11 +254,15 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
                                 na.rm = TRUE)
             expr <- c(expr1, expr2)
 
-            corResult <- cor.test(meth, expr)
+            corResult <- try(cor.test(meth, expr))
 
             interesting <- TRUE
 
-            if (regionType == "promoters" & corResult[["estimate"]] > 0) {
+            if (class(corResult) == "try-error") {
+            	interesting <- FALSE
+            }
+
+            else if (regionType == "promoters" & corResult[["estimate"]] > 0) {
                 interesting <- FALSE
             }
 
