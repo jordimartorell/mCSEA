@@ -6,7 +6,7 @@
 \usage{
 mCSEATest(rank, methData, pheno = NULL, column = 1,
   regionsTypes = c("promoters", "genes", "CGI"), customAnnotation = NULL,
-  minCpGs = 5, nproc = 1, nperm = 10000, platform = "450k")
+  minCpGs = 5, nproc = 1, nperm = NULL, platform = "450k")
 }
 \arguments{
 \item{rank}{A named numeric vector with the ranking statistic of each CpG
@@ -33,7 +33,8 @@ this threshold are not tested}
 
 \item{nproc}{Number of processors to use in GSEA step (default = 1)}
 
-\item{nperm}{Number of permutations to do in GSEA step (default = 10000)}
+\item{nperm}{(deprecated) Number of permutations to do in GSEA step in the 
+previous implementation. Now, this parameter is ignored}
 
 \item{platform}{Platform used to get the methylation data (450k or EPIC)}
 }

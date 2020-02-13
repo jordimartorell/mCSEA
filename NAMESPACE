@@ -7,6 +7,6 @@ import(mCSEAdata)
 import(Homo.sapiens)
 importFrom("grDevices", "dev.off", "pdf")
 importFrom("stats", "cor.test", "lm", "model.matrix",
-            "na.omit", "p.adjust", "relevel")
+            "na.omit", "p.adjust", "relevel", "sd")
 importFrom("graphics", "abline", "legend", "par", "plot")
 

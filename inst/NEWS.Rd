@@ -8,3 +8,8 @@
     \item mCSEA release.
   }
 }
+\section{Version 1.7.0}{
+  \itemize{
+    \item GSEA algorithm updated to fGSEAMultiLevel method.
+  }
+}

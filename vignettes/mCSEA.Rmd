@@ -28,8 +28,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 references:
 - id: du10
-  title: "Comparison of Beta-value and M-value methods for quantifying 
-methylation levels by microarray analysis"
+  title: "Comparison of Beta-value and M-value methods for quantifying methylation levels by microarray analysis"
   author:
   - family: Du
     given: P
@@ -51,8 +50,7 @@ methylation levels by microarray analysis"
   volume: 11
   issue: 587
 - id: jones12
-  title: "Functions of DNA Methylation: islands, start sites, 
-gene bodies and beyond"
+  title: "Functions of DNA Methylation: islands, start sites, gene bodies and beyond"
   author:
   - family: Jones
     given: Peter A.
@@ -85,8 +83,7 @@ gene bodies and beyond"
   issue: 84
   
 - id: jones12
-  title: "Functions of DNA Methylation: islands, start sites, 
-gene bodies and beyond"
+  title: "Functions of DNA Methylation: islands, start sites, gene bodies and beyond"
   author:
   - family: Jones
     given: Peter A.
@@ -222,16 +219,10 @@ specify the regions you want to test with _regionsTypes_ option. _minCpGs_
 option specifies the minimum amount of CpGs in a region to be considered in 
 the analysis (5 by default). You can increase the number of processors to use 
 with _nproc_ option (recommended if you have enough computational resources). 
-By default, mCSEA performs 10000 
-permutations to calculate P-values, but you can change that with _nperm_ 
-option. Finally, you should specify if the array platform is 450k or EPIC with 
+Finally, you should specify if the array platform is 450k or EPIC with 
 the _platform_ option. 
-Note that _mCSEATest()_ performs permutations to get the P-values, so each 
-time it is executed, the results are not exactly the same. To avoid that, we 
-recommend to include a _set.seed()_ in order to get reproducible results. 
 
 ```{r, warning=FALSE}
-set.seed(123)
 myResults <- mCSEATest(myRank, betaTest, phenoTest, 
                         regionsTypes = "promoters", platform = "EPIC")
 ```
@@ -249,11 +240,10 @@ from `r BiocStyle::Biocpkg("fgsea")` help):
 
 * *pval:* Estimated P-value.
 * *padj:* P-value adjusted by BH method.
+* *log2err:* Expected error for the standard deviation of the P-value logarithm.
 * *ES:* Enrichment score.
 * *NES:* Normalized enrichment score by number of CpGs associated to the 
 feature.
-* *nMoreExtreme:* Number of times a random gene set had a more extreme 
-enrichment score value.
 * *size:* Number of CpGs associated to the feature.
 * *leadingEdge:* Leading edge CpGs which drive the enrichment.
 

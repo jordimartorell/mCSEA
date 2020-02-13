@@ -191,8 +191,8 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
                                 envir=environment())
 
         indInt <- parallel::parLapply(cl, region2,
-                            function(region2) {
-                                .integrateCore(region2, methData=methData,
+                            fun = function(x) {
+                                .integrateCore(x, methData=methData,
                                                 exprData=exprData, pheno=pheno,
                                                 geneIDs=geneIDs,
                                                 minCor=minCor, minP=minP,
@@ -201,10 +201,12 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
                                                 rangeGenes=rangeGenes,
                                                 folder=folder,
                                                 makePlot=makePlot)})
+        
+
 
         parallel::stopCluster(cl)
-
-        intResults <- rbind(intResults, do.call("rbind", indInt))
+        
+		intResults <- rbind(intResults, do.call("rbind", indInt))
     }
 
     intResults <- intResults[order(abs(intResults[["Correlation"]]),
@@ -220,7 +222,7 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
 .integrateCore <- function(indRegion, methData, exprData, pheno, geneIDs,
                             minCor, minP, regionType, corCpGs, annot,
                             rangeGenes, folder, makePlot){
-
+	
     corCpGs <- corCpGs[[indRegion]]
 
     pheno <- pheno[,1]

@@ -19,7 +19,8 @@
 #' @param minCpGs Minimum number of CpGs associated to a region. Regions below
 #' this threshold are not tested
 #' @param nproc Number of processors to use in GSEA step (default = 1)
-#' @param nperm Number of permutations to do in GSEA step (default = 10000)
+#' @param nperm (deprecated) Number of permutations to do in GSEA step in the 
+#' previous implementation. Now, this parameter is ignored
 #' @param platform Platform used to get the methylation data (450k or EPIC)
 #'
 #' @return A list with the results of each of the analyzed regions. For each
@@ -54,7 +55,7 @@
 mCSEATest <- function(rank, methData, pheno = NULL, column = 1,
                         regionsTypes = c("promoters", "genes", "CGI"),
                         customAnnotation = NULL, minCpGs = 5, nproc = 1,
-                        nperm = 10000, platform = "450k")
+                        nperm = NULL, platform = "450k")
     {
 
     output <- list()
@@ -153,7 +154,7 @@ mCSEATest <- function(rank, methData, pheno = NULL, column = 1,
             if (region == "promoters") {
 
                 resGSEA <- .performGSEA(region, rank, platform, assocPromoters,
-                                        minCpGs, nperm, nproc)
+                                        minCpGs, nproc)
 
                 output[["promoters"]] <- resGSEA[[1]]
                 output[["promoters_association"]] <- resGSEA[[2]]
@@ -163,7 +164,7 @@ mCSEATest <- function(rank, methData, pheno = NULL, column = 1,
             else if (region == "genes") {
 
                 resGSEA <- .performGSEA(region, rank, platform, assocGenes,
-                                        minCpGs, nperm, nproc)
+                                        minCpGs, nproc)
 
                 output[["genes"]] <- resGSEA[[1]]
                 output[["genes_association"]] <- resGSEA[[2]]
@@ -172,7 +173,7 @@ mCSEATest <- function(rank, methData, pheno = NULL, column = 1,
             else if (region == "CGI") {
 
                 resGSEA <- .performGSEA(region, rank, platform, assocCGI,
-                                        minCpGs, nperm, nproc)
+                                        minCpGs, nproc)
 
                 output[["CGI"]] <- resGSEA[[1]]
                 output[["CGI_association"]] <- resGSEA[[2]]
@@ -185,7 +186,7 @@ mCSEATest <- function(rank, methData, pheno = NULL, column = 1,
     if (!is.null(customAnnotation)) {
 
         resGSEA <- .performGSEA("custom", rank, platform, customAnnotation,
-                                minCpGs, nperm, nproc)
+                                minCpGs, nproc)
 
         output[["custom"]] <- resGSEA[[1]]
         output[["custom_association"]] <- resGSEA[[2]]
@@ -199,7 +200,7 @@ mCSEATest <- function(rank, methData, pheno = NULL, column = 1,
 }
 
 
-.performGSEA <- function(region, rank, platform, assoc, minCpGs, nperm, nproc) {
+.performGSEA <- function(region, rank, platform, assoc, minCpGs, nproc) {
 
     if (region != "custom"){
         message(paste("Associating CpG sites to", region))
@@ -222,8 +223,8 @@ mCSEATest <- function(rank, methData, pheno = NULL, column = 1,
 
     message(paste("Analysing", region))
 
-    fgseaRes <- fgsea::fgsea(genes, rank, minSize=minCpGs,
-                            nperm=nperm, nproc=nproc)
+    fgseaRes <- fgsea::fgseaMultilevel(genes, rank, minSize=minCpGs,
+                                        nproc=nproc)
     fgseaDataFrame <- as.data.frame(fgseaRes)
     rownames(fgseaDataFrame) <- fgseaDataFrame[,1]
     fgseaDataFrame <- fgseaDataFrame[,-1]
