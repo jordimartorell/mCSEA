@@ -59,9 +59,9 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
     platform <- mCSEAResults[["platform"]]
 
     # Remove genes with Standar Deviation = 0
-    ngenesPre = nrow(exprData)
-    exprData = exprData[apply(exprData, 1, sd) != 0,]
-    ngenesPost = nrow(exprData)
+    ngenesPre <- nrow(exprData)
+    exprData <- exprData[apply(exprData, 1, sd) != 0,]
+    ngenesPost <- nrow(exprData)
     
     message(ngenesPre -  ngenesPost, " genes removed from exprData due to Standar Deviation = 0")
 
@@ -115,8 +115,8 @@ mCSEAIntegrate <- function(mCSEAResults, exprData,
         stop("nproc must be a positive number")
     }
 
-    if (class(exprData) == "SummarizedExperiment" |
-        class(exprData) == "RangedSummarizedExperiment" ){
+    if ("SummarizedExperiment" %in% is(exprData) |
+        "RangedSummarizedExperiment" %in% is(exprData)){
         exprData <- SummarizedExperiment::assay(exprData)
     }
 

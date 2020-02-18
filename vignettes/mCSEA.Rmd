@@ -19,7 +19,9 @@ abstract: >
   GSEA analysis for DMRs identification, to plot the results and to integrate 
   them with expression data.
 output:
-  BiocStyle::pdf_document
+  # BiocStyle::pdf_document(template = NULL)
+  pdf_document:
+    template: NULL
 #output: word_document
 
 vignette: >
