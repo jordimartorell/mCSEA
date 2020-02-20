@@ -108,8 +108,8 @@ rankProbes <- function(methData, pheno = NULL, paired = FALSE, explanatory = 1,
 
     # Get data from SummarizedExperiment objects
 
-    if (class(methData) == "SummarizedExperiment" |
-        class(methData) == "RangedSummarizedExperiment" ){
+    if (any(class(methData) == "SummarizedExperiment" |
+            class(methData) == "RangedSummarizedExperiment")){
         if (is.null(pheno)){
             pheno <- SummarizedExperiment::colData(methData)
         }
